@@ -12,3 +12,5 @@ As we used HuggingFace for downloading the MMLLMs, to also successfully download
 
 For the classic edge models, we either used `torchvision` models which should be already installed in the virtual environments, or alternatively, we provide the models as a file directly for the corresponding use-case(s) (rest assured, all instructions are provided in the adjacent README.md files).
 
+
+## [PART 2 - `EdgeMMEval`] Reproducibility and testing
