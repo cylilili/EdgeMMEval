@@ -1,0 +1,1 @@
+The bigger model, i.e., `vosk-model-en-us-0.22` is automatically downloaded when running the experiemnt script, as it is too big for upload on GitHub. We have added the `vosk-model-small-en-us-0.15` model, however, just for you to have an idea about their artefact structure.
