@@ -101,3 +101,61 @@ python 2_visualizations_action_recognition_kinetics.py --log_csv ar_kinetics_log
 
 
 ## [PART 2 - `EdgeMMEval`] `EdgeMMEval` reproducibility and testing
+
+### Installation
+
+```bash
+cd edgemmeval/
+pip install -r requirements.txt
+# or, for an editable install:
+pip install -e .
+```
+
+Python > 3.9 is required. You also need [Ollama](https://ollama.com) running with the relevant models pulled (see `edgemmeval/README.md` for the full list).
+
+### Quick smoke-test (no GPU needed, ~1–2 min)
+
+```bash
+python edgemmeval/examples/quick_ic.py \
+    --data benchmarking/3_image_classification/src \
+    --n-samples 10 --no-deploy-probe
+
+python edgemmeval/examples/quick_hd.py \
+    --data benchmarking/5_hazard_detection/src/detectium_fire \
+    --n-samples 10
+```
+
+### Run a single task via the full CLI
+
+```bash
+python edgemmeval/run_benchmark.py \
+    --task ic \
+    --data-ic /path/to/imagenette2 \
+    --budget standard \
+    --output ic_results.json
+```
+
+### Run all five tasks
+
+```bash
+python edgemmeval/run_benchmark.py --all \
+    --data-ic /path/to/imagenette2 \
+    --data-asr /path/to/LibriSpeech/test-clean \
+    --data-oc-images /path/to/coco/val2017 \
+    --data-oc-ann /path/to/coco/annotations/instances_val2017.json \
+    --data-ar /path/to/kinetics/mini_val \
+    --data-hd /path/to/detectium_fire \
+    --budget full \
+    --output results_all.json
+```
+
+### Reproduce the publication figures (requires result CSVs/JSONs)
+
+```bash
+python edgemmeval/edgemmeval/scripts/generate_figures.py \
+    --ic-csv  benchmarking/3_image_classification/src/results_imgcls_log_3925_validation.csv \
+    --ar-csv  benchmarking/4_action_recognition/src/ar_kinetics_log.csv \
+    --hd-csv  benchmarking/5_hazard_detection/src/output/tables/summary.csv
+```
+
+For full details on extending the harness with new tasks, the ECR metric, and all CLI flags, see **`edgemmeval/README.md`**.
