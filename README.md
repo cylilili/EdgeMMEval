@@ -1,5 +1,5 @@
 # submission_93_sec
-<img width="1000" alt="edgemmeval" src="https://github.com/user-attachments/assets/d12996bf-bc05-4c74-a32f-bb128a5096ab" />
+<img width="300" alt="edgemmeval" src="https://github.com/user-attachments/assets/d12996bf-bc05-4c74-a32f-bb128a5096ab" />
 
 Code, data, and experiments for our paper "Multi-Modal LLMs at the Edge: A Comparative Study Against Specialized Edge Pipelines". Specifically, we organized the repo in two main parts: (1) five different subdirectories, corresponding to the five tasks considered in the first part (`OC`, `ASR`, `IC`, `AR`, `HD`), and (2) one subdirectory with the source code and experiments for `EdgeMMEval`.
 
