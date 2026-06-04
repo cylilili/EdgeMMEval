@@ -4,7 +4,6 @@ Quick smoke-test: Hazard Detection on DetectiumFire dataset.
 Requirements: DetectiumFire dataset (see benchmarking/5_hazard_detection/download_detectiumfire_dataset.py)
               Ollama with gemma3n:e2b pulled
               YOLOv8 fire weights at benchmarking/5_hazard_detection/src/weights/best.pt
-Usage: python examples/quick_hd.py --data /path/to/detectium_fire
 """
 import argparse, sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
