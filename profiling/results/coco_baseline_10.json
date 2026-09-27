@@ -1,0 +1,232 @@
+{
+  "purpose": "multi-image baseline; warm-up excluded from measured statistics",
+  "model": "Qwen/Qwen3-VL-2B-Instruct",
+  "task": "caption",
+  "device": "mps",
+  "dtype": "torch.float16",
+  "attention_backend": "eager",
+  "prompt": "Describe the visible objects and their spatial relationships in this image in two or three sentences. Do not speculate about things that are not visible.",
+  "max_new_tokens": 32,
+  "max_image_side": 512,
+  "load_seconds_including_download_if_needed": 25.812309166999967,
+  "warmup": true,
+  "summary": {
+    "count": 10,
+    "mean_seconds": 7.418458246,
+    "median_seconds": 7.184123542000179,
+    "p90_seconds": 8.446325458999581,
+    "stdev_seconds": 0.8346450440284408,
+    "min_seconds": 6.425698708999789,
+    "max_seconds": 8.792695874999936
+  },
+  "images": [
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000139.jpg",
+      "image_size": [
+        512,
+        341
+      ],
+      "original_image_size": [
+        640,
+        426
+      ],
+      "input_tokens_including_visual_placeholders": 213,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 7.118291834000047,
+      "answer": "The image shows a modern kitchen and dining area with a warm, yellowish color scheme. A woman is standing at the kitchen counter, while a man is visible",
+      "memory_after": {
+        "allocated_mb": 4060.017333984375,
+        "driver_allocated_mb": 5960.40625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000285.jpg",
+      "image_size": [
+        469,
+        512
+      ],
+      "original_image_size": [
+        586,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 277,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 8.792695874999936,
+      "answer": "The image features a close-up of a brown bear with a thick, shaggy coat, looking directly at the camera. The bear is positioned in a grass",
+      "memory_after": {
+        "allocated_mb": 4062.087890625,
+        "driver_allocated_mb": 5961.046875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000632.jpg",
+      "image_size": [
+        512,
+        386
+      ],
+      "original_image_size": [
+        640,
+        483
+      ],
+      "input_tokens_including_visual_placeholders": 229,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 7.249955250000312,
+      "answer": "The image shows a bedroom with a large window that lets in bright sunlight, illuminating the room and revealing a lush green tree outside. A wooden dresser with a",
+      "memory_after": {
+        "allocated_mb": 4060.712890625,
+        "driver_allocated_mb": 5993.40625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000724.jpg",
+      "image_size": [
+        375,
+        500
+      ],
+      "original_image_size": [
+        375,
+        500
+      ],
+      "input_tokens_including_visual_placeholders": 229,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 7.820930875000158,
+      "answer": "A red octagonal stop sign is mounted on a metal pole in the foreground of the image, positioned at a street corner. The sign is surrounded by trees and",
+      "memory_after": {
+        "allocated_mb": 4060.712890625,
+        "driver_allocated_mb": 5993.40625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000776.jpg",
+      "image_size": [
+        342,
+        512
+      ],
+      "original_image_size": [
+        428,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 213,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 6.590481541999907,
+      "answer": "The image features a close-up of several stuffed bears, with a prominent brown bear in the foreground and a lighter brown bear positioned behind it. A third, darker",
+      "memory_after": {
+        "allocated_mb": 4060.017333984375,
+        "driver_allocated_mb": 5993.40625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000785.jpg",
+      "image_size": [
+        512,
+        340
+      ],
+      "original_image_size": [
+        640,
+        425
+      ],
+      "input_tokens_including_visual_placeholders": 213,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 6.834535625000171,
+      "answer": "A woman is skiing on a snowy slope, wearing a red and white jacket, black pants, and a black and white striped beanie. She is holding ski",
+      "memory_after": {
+        "allocated_mb": 4060.017333984375,
+        "driver_allocated_mb": 5993.40625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000802.jpg",
+      "image_size": [
+        339,
+        512
+      ],
+      "original_image_size": [
+        424,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 213,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 6.425698708999789,
+      "answer": "The image shows a kitchen with a white stove and oven, a wooden cabinet with a countertop, and a white refrigerator with an ice and water dispenser. The",
+      "memory_after": {
+        "allocated_mb": 4060.017333984375,
+        "driver_allocated_mb": 6003.40625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000872.jpg",
+      "image_size": [
+        497,
+        512
+      ],
+      "original_image_size": [
+        621,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 293,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 8.446325458999581,
+      "answer": "In the foreground, a baseball player in a white uniform and a blue helmet is running on the dirt, with a blurred motion suggesting speed. Behind him, another",
+      "memory_after": {
+        "allocated_mb": 4061.712890625,
+        "driver_allocated_mb": 6001.78125
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000885.jpg",
+      "image_size": [
+        512,
+        342
+      ],
+      "original_image_size": [
+        640,
+        427
+      ],
+      "input_tokens_including_visual_placeholders": 213,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 6.735293457999887,
+      "answer": "A tennis player in a white shirt and shorts is in the middle of a swing, holding a red and white racket. Behind him, a man in a dark",
+      "memory_after": {
+        "allocated_mb": 4060.017333984375,
+        "driver_allocated_mb": 6001.78125
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000001000.jpg",
+      "image_size": [
+        512,
+        384
+      ],
+      "original_image_size": [
+        640,
+        480
+      ],
+      "input_tokens_including_visual_placeholders": 229,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 8.170373833000212,
+      "answer": "A group of young tennis players and a few adults are gathered on a blue tennis court, posing for a photo. The players are wearing various athletic clothing, including",
+      "memory_after": {
+        "allocated_mb": 4060.712890625,
+        "driver_allocated_mb": 6001.78125
+      },
+      "measured": true
+    }
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.10.0",
+    "torchvision": "0.25.0",
+    "transformers": "5.2.0",
+    "accelerate": "1.15.0",
+    "Pillow": "12.3.0"
+  }
+}

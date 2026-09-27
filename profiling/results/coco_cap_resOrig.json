@@ -1,0 +1,232 @@
+{
+  "purpose": "multi-image baseline; warm-up excluded from measured statistics",
+  "model": "Qwen/Qwen3-VL-2B-Instruct",
+  "task": "caption",
+  "device": "mps",
+  "dtype": "torch.float16",
+  "attention_backend": "eager",
+  "prompt": "Describe the visible objects and their spatial relationships in this image in two or three sentences. Do not speculate about things that are not visible.",
+  "max_new_tokens": 64,
+  "max_image_side": 0,
+  "load_seconds_including_download_if_needed": 30.86384583400013,
+  "warmup": true,
+  "summary": {
+    "count": 10,
+    "mean_seconds": 10.67737737919997,
+    "median_seconds": 8.923550874999819,
+    "p90_seconds": 14.593494542000371,
+    "stdev_seconds": 3.594356189198844,
+    "min_seconds": 7.167725125000288,
+    "max_seconds": 17.32493045799947
+  },
+  "images": [
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000139.jpg",
+      "image_size": [
+        640,
+        426
+      ],
+      "original_image_size": [
+        640,
+        426
+      ],
+      "input_tokens_including_visual_placeholders": 297,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 7.167725125000288,
+      "answer": "The image shows a modern, well-lit living room with warm yellow walls and a wooden floor. A large flat-screen TV sits on a white and black media console, positioned to the left of a white radiator. A dining table with four wooden chairs is in the center of the room, with a woman standing at the",
+      "memory_after": {
+        "allocated_mb": 4061.005126953125,
+        "driver_allocated_mb": 8213.03125
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000285.jpg",
+      "image_size": [
+        586,
+        640
+      ],
+      "original_image_size": [
+        586,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 397,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 8.624950917000206,
+      "answer": "The image features a close-up of a brown bear with a thick, shaggy coat, looking directly at the camera. The bear is positioned in the foreground, with a background of green grass that appears to be slightly out of focus. The bear's head is centered in the frame, and its ears are upright,",
+      "memory_after": {
+        "allocated_mb": 4063.353515625,
+        "driver_allocated_mb": 11364.4375
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000632.jpg",
+      "image_size": [
+        640,
+        483
+      ],
+      "original_image_size": [
+        640,
+        483
+      ],
+      "input_tokens_including_visual_placeholders": 337,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 9.222150832999432,
+      "answer": "The image shows a bedroom with a large blue comforter on a bed, a wooden dresser with a round mirror above it, and a bookshelf filled with books. A window with a view of green trees is on the right side of the room, and a potted plant sits on the windowsill. A small wooden",
+      "memory_after": {
+        "allocated_mb": 4062.031982421875,
+        "driver_allocated_mb": 11365.21875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000724.jpg",
+      "image_size": [
+        375,
+        500
+      ],
+      "original_image_size": [
+        375,
+        500
+      ],
+      "input_tokens_including_visual_placeholders": 229,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 7.764149125000586,
+      "answer": "A red octagonal stop sign is mounted on a metal pole in the foreground of the image, positioned at a street corner. The sign is surrounded by trees and greenery, with a white building visible in the background. The street is paved and has a white arrow painted on it, indicating a turn or direction.",
+      "memory_after": {
+        "allocated_mb": 4061.000732421875,
+        "driver_allocated_mb": 11444.453125
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000776.jpg",
+      "image_size": [
+        428,
+        640
+      ],
+      "original_image_size": [
+        428,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 297,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 14.593494542000371,
+      "answer": "The image features a close-up of several stuffed teddy bears, with one in the foreground and others stacked behind it. The bear in the foreground is a medium-brown color with a soft, fluffy texture and small black eyes. Behind it, a larger, lighter-brown teddy bear is partially visible, with its",
+      "memory_after": {
+        "allocated_mb": 4061.005126953125,
+        "driver_allocated_mb": 11446.453125
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000785.jpg",
+      "image_size": [
+        640,
+        425
+      ],
+      "original_image_size": [
+        640,
+        425
+      ],
+      "input_tokens_including_visual_placeholders": 297,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 8.09329549999984,
+      "answer": "A woman is skiing on a snow-covered slope, wearing a red and white jacket, black pants, and a striped beanie. She is holding ski poles and appears to be in motion, with snow kicked up from her skis. The background features a white sky and a line of red poles marking the edge of the",
+      "memory_after": {
+        "allocated_mb": 4061.005126953125,
+        "driver_allocated_mb": 11456.453125
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000802.jpg",
+      "image_size": [
+        424,
+        640
+      ],
+      "original_image_size": [
+        424,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 297,
+      "generated_tokens_including_special_tokens": 63,
+      "latency_seconds": 7.701412374999563,
+      "answer": "The image shows a kitchen with a white electric stove and oven, a white refrigerator with a water and ice dispenser, and wooden cabinets. The cabinets are mounted on the wall above the stove and below the refrigerator. The floor is tiled in a light color. The kitchen has a white ceiling and a white wall.",
+      "memory_after": {
+        "allocated_mb": 4061.00634765625,
+        "driver_allocated_mb": 11444.453125
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000872.jpg",
+      "image_size": [
+        621,
+        640
+      ],
+      "original_image_size": [
+        621,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 417,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 17.32493045799947,
+      "answer": "Two baseball players are on a field. The player in the foreground, wearing a white shirt and a blue helmet, is running. The player in the background, wearing a green shirt and a green cap, is standing and holding a baseball glove. The players are on a dirt infield with a grassy outfield, and there",
+      "memory_after": {
+        "allocated_mb": 4063.353515625,
+        "driver_allocated_mb": 11460.90625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000885.jpg",
+      "image_size": [
+        640,
+        427
+      ],
+      "original_image_size": [
+        640,
+        427
+      ],
+      "input_tokens_including_visual_placeholders": 297,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 14.126445707999665,
+      "answer": "A tennis player in a white and black outfit is in the middle of a swing, holding a red and white racket. The player is on a green tennis court with a blue baseline. Behind the player, a man in a dark blue polo shirt and cap is standing, and another man in a dark blue shirt and cap",
+      "memory_after": {
+        "allocated_mb": 4061.005126953125,
+        "driver_allocated_mb": 11460.90625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000001000.jpg",
+      "image_size": [
+        640,
+        480
+      ],
+      "original_image_size": [
+        640,
+        480
+      ],
+      "input_tokens_including_visual_placeholders": 337,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 12.155219209000279,
+      "answer": "A group of children and one adult are gathered on a blue tennis court, with a green wall and trees in the background. The adult, standing in the center, is holding a trophy and a medal, while the children are dressed in athletic wear, some in red and white shirts, and others in various colors. The",
+      "memory_after": {
+        "allocated_mb": 4062.031982421875,
+        "driver_allocated_mb": 11460.90625
+      },
+      "measured": true
+    }
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.10.0",
+    "torchvision": "0.25.0",
+    "transformers": "5.2.0",
+    "accelerate": "1.15.0",
+    "Pillow": "12.3.0"
+  }
+}

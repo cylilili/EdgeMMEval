@@ -1,0 +1,380 @@
+{
+  "purpose": "multi-image baseline; warm-up excluded from measured statistics",
+  "model": "Qwen/Qwen3-VL-2B-Instruct",
+  "task": "classification",
+  "device": "mps",
+  "dtype": "torch.float16",
+  "attention_backend": "eager",
+  "prompt": "Classify this image into exactly one of: tench, English springer, cassette player, chain saw, church, French horn, garbage truck, gas pump, golf ball, parachute. Return only the category name.",
+  "max_new_tokens": 16,
+  "max_image_side": 384,
+  "load_seconds_including_download_if_needed": 33.126942457999576,
+  "warmup": true,
+  "summary": {
+    "count": 10,
+    "mean_seconds": 0.8955618542000593,
+    "median_seconds": 0.8512639165001019,
+    "p90_seconds": 1.0433335830002761,
+    "stdev_seconds": 0.12192086880488846,
+    "min_seconds": 0.7761499589996674,
+    "max_seconds": 1.117511999999806,
+    "memory": {
+      "peak_allocated_mb": {
+        "mean_mb": 4108.624560546875,
+        "max_mb": 4115.958984375
+      },
+      "peak_driver_allocated_mb": {
+        "mean_mb": 5764.265625,
+        "max_mb": 5868.4375
+      },
+      "peak_increment_allocated_mb": {
+        "mean_mb": 50.678271484375,
+        "max_mb": 58.0126953125
+      },
+      "peak_increment_driver_mb": {
+        "mean_mb": 103.265625,
+        "max_mb": 1024.15625
+      }
+    }
+  },
+  "images": [
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000139.jpg",
+      "image_size": [
+        384,
+        256
+      ],
+      "original_image_size": [
+        640,
+        426
+      ],
+      "input_tokens_including_visual_placeholders": 150,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 0.7966119170005186,
+      "answer": "garbage truck",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 4835.921875,
+        "peak_allocated_mb": 4104.719970703125,
+        "peak_driver_allocated_mb": 4835.9375,
+        "peak_increment_allocated_mb": 46.773681640625,
+        "peak_increment_driver_mb": 0.015625,
+        "after_allocated_mb": 4059.076904296875,
+        "after_driver_allocated_mb": 4835.921875,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4059.076904296875,
+        "driver_allocated_mb": 4835.921875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000285.jpg",
+      "image_size": [
+        352,
+        384
+      ],
+      "original_image_size": [
+        586,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 186,
+      "generated_tokens_including_special_tokens": 2,
+      "latency_seconds": 1.0433335830002761,
+      "answer": "bear",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 4835.921875,
+        "peak_allocated_mb": 4112.68359375,
+        "peak_driver_allocated_mb": 5860.078125,
+        "peak_increment_allocated_mb": 54.7373046875,
+        "peak_increment_driver_mb": 1024.15625,
+        "after_allocated_mb": 4060.21484375,
+        "after_driver_allocated_mb": 5860.0625,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4060.21484375,
+        "driver_allocated_mb": 5860.0625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000632.jpg",
+      "image_size": [
+        384,
+        290
+      ],
+      "original_image_size": [
+        640,
+        483
+      ],
+      "input_tokens_including_visual_placeholders": 162,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 1.0300727499998175,
+      "answer": "garbage truck",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 5860.0625,
+        "peak_allocated_mb": 4107.43359375,
+        "peak_driver_allocated_mb": 5868.265625,
+        "peak_increment_allocated_mb": 49.4873046875,
+        "peak_increment_driver_mb": 8.203125,
+        "after_allocated_mb": 4059.46484375,
+        "after_driver_allocated_mb": 5868.25,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4059.46484375,
+        "driver_allocated_mb": 5868.25
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000724.jpg",
+      "image_size": [
+        288,
+        384
+      ],
+      "original_image_size": [
+        375,
+        500
+      ],
+      "input_tokens_including_visual_placeholders": 162,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 0.8666577499998311,
+      "answer": "garbage truck",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 5868.25,
+        "peak_allocated_mb": 4105.18359375,
+        "peak_driver_allocated_mb": 5868.265625,
+        "peak_increment_allocated_mb": 47.2373046875,
+        "peak_increment_driver_mb": 0.015625,
+        "after_allocated_mb": 4059.46484375,
+        "after_driver_allocated_mb": 5868.25,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4059.46484375,
+        "driver_allocated_mb": 5868.25
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000776.jpg",
+      "image_size": [
+        257,
+        384
+      ],
+      "original_image_size": [
+        428,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 150,
+      "generated_tokens_including_special_tokens": 3,
+      "latency_seconds": 0.7761499589996674,
+      "answer": "tench",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 5868.25,
+        "peak_allocated_mb": 4109.032470703125,
+        "peak_driver_allocated_mb": 5868.265625,
+        "peak_increment_allocated_mb": 51.086181640625,
+        "peak_increment_driver_mb": 0.015625,
+        "after_allocated_mb": 4059.0751953125,
+        "after_driver_allocated_mb": 5868.25,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4059.0751953125,
+        "driver_allocated_mb": 5868.25
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000785.jpg",
+      "image_size": [
+        384,
+        255
+      ],
+      "original_image_size": [
+        640,
+        425
+      ],
+      "input_tokens_including_visual_placeholders": 150,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 0.8566105410000091,
+      "answer": "golf ball",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 5868.25,
+        "peak_allocated_mb": 4104.719970703125,
+        "peak_driver_allocated_mb": 5868.265625,
+        "peak_increment_allocated_mb": 46.773681640625,
+        "peak_increment_driver_mb": 0.015625,
+        "after_allocated_mb": 4059.076904296875,
+        "after_driver_allocated_mb": 5868.25,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4059.076904296875,
+        "driver_allocated_mb": 5868.25
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000802.jpg",
+      "image_size": [
+        254,
+        384
+      ],
+      "original_image_size": [
+        424,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 150,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 0.7835480000003372,
+      "answer": "garbage truck",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 5868.25,
+        "peak_allocated_mb": 4104.719970703125,
+        "peak_driver_allocated_mb": 5868.265625,
+        "peak_increment_allocated_mb": 46.773681640625,
+        "peak_increment_driver_mb": 0.015625,
+        "after_allocated_mb": 4059.076904296875,
+        "after_driver_allocated_mb": 5868.25,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4059.076904296875,
+        "driver_allocated_mb": 5868.25
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000872.jpg",
+      "image_size": [
+        373,
+        384
+      ],
+      "original_image_size": [
+        621,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 198,
+      "generated_tokens_including_special_tokens": 3,
+      "latency_seconds": 1.117511999999806,
+      "answer": "tench",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 5868.25,
+        "peak_allocated_mb": 4115.958984375,
+        "peak_driver_allocated_mb": 5868.4375,
+        "peak_increment_allocated_mb": 58.0126953125,
+        "peak_increment_driver_mb": 0.1875,
+        "after_allocated_mb": 4060.020263671875,
+        "after_driver_allocated_mb": 5868.421875,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4060.020263671875,
+        "driver_allocated_mb": 5868.421875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000885.jpg",
+      "image_size": [
+        384,
+        256
+      ],
+      "original_image_size": [
+        640,
+        427
+      ],
+      "input_tokens_including_visual_placeholders": 150,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 0.8392047500001354,
+      "answer": "golf ball",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 5868.421875,
+        "peak_allocated_mb": 4109.032470703125,
+        "peak_driver_allocated_mb": 5868.4375,
+        "peak_increment_allocated_mb": 51.086181640625,
+        "peak_increment_driver_mb": 0.015625,
+        "after_allocated_mb": 4059.076904296875,
+        "after_driver_allocated_mb": 5868.421875,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4059.076904296875,
+        "driver_allocated_mb": 5868.421875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000001000.jpg",
+      "image_size": [
+        384,
+        288
+      ],
+      "original_image_size": [
+        640,
+        480
+      ],
+      "input_tokens_including_visual_placeholders": 162,
+      "generated_tokens_including_special_tokens": 3,
+      "latency_seconds": 0.8459172920001947,
+      "answer": "tench",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 5868.421875,
+        "peak_allocated_mb": 4112.760986328125,
+        "peak_driver_allocated_mb": 5868.4375,
+        "peak_increment_allocated_mb": 54.814697265625,
+        "peak_increment_driver_mb": 0.015625,
+        "after_allocated_mb": 4059.457763671875,
+        "after_driver_allocated_mb": 5868.421875,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4059.457763671875,
+        "driver_allocated_mb": 5868.421875
+      },
+      "measured": true
+    }
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.10.0",
+    "torchvision": "0.25.0",
+    "transformers": "5.2.0",
+    "accelerate": "1.15.0",
+    "Pillow": "12.3.0"
+  }
+}

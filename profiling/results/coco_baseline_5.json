@@ -1,0 +1,132 @@
+{
+  "purpose": "multi-image baseline; warm-up excluded from measured statistics",
+  "model": "Qwen/Qwen3-VL-2B-Instruct",
+  "task": "caption",
+  "device": "mps",
+  "dtype": "torch.float16",
+  "attention_backend": "eager",
+  "prompt": "Describe the visible objects and their spatial relationships in this image in two or three sentences. Do not speculate about things that are not visible.",
+  "max_new_tokens": 32,
+  "max_image_side": 512,
+  "load_seconds_including_download_if_needed": 31.856692917000146,
+  "warmup": true,
+  "summary": {
+    "count": 5,
+    "mean_seconds": 7.267834483399929,
+    "median_seconds": 7.382260667000082,
+    "p90_seconds": 8.218549917000018,
+    "stdev_seconds": 1.0966192607648542,
+    "min_seconds": 5.922815291000006,
+    "max_seconds": 8.41898533299991
+  },
+  "images": [
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000139.jpg",
+      "image_size": [
+        512,
+        341
+      ],
+      "original_image_size": [
+        640,
+        426
+      ],
+      "input_tokens_including_visual_placeholders": 213,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 5.922815291000006,
+      "answer": "The image shows a modern kitchen and dining area with a warm, yellowish color scheme. A woman is standing at the kitchen counter, while a man is visible",
+      "memory_after": {
+        "allocated_mb": 4060.017333984375,
+        "driver_allocated_mb": 5974.40625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000285.jpg",
+      "image_size": [
+        469,
+        512
+      ],
+      "original_image_size": [
+        586,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 277,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 8.218549917000018,
+      "answer": "The image features a close-up of a brown bear with a thick, shaggy coat, looking directly at the camera. The bear is positioned in a grass",
+      "memory_after": {
+        "allocated_mb": 4062.087890625,
+        "driver_allocated_mb": 5963.046875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000632.jpg",
+      "image_size": [
+        512,
+        386
+      ],
+      "original_image_size": [
+        640,
+        483
+      ],
+      "input_tokens_including_visual_placeholders": 229,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 7.382260667000082,
+      "answer": "The image shows a bedroom with a large window that lets in bright sunlight, illuminating the room and revealing a lush green tree outside. A wooden dresser with a",
+      "memory_after": {
+        "allocated_mb": 4060.712890625,
+        "driver_allocated_mb": 5995.4375
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000724.jpg",
+      "image_size": [
+        375,
+        500
+      ],
+      "original_image_size": [
+        375,
+        500
+      ],
+      "input_tokens_including_visual_placeholders": 229,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 6.396561208999628,
+      "answer": "A red octagonal stop sign is mounted on a metal pole in the foreground of the image, positioned at a street corner. The sign is surrounded by trees and",
+      "memory_after": {
+        "allocated_mb": 4060.712890625,
+        "driver_allocated_mb": 6043.4375
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000776.jpg",
+      "image_size": [
+        342,
+        512
+      ],
+      "original_image_size": [
+        428,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 213,
+      "generated_tokens_including_special_tokens": 32,
+      "latency_seconds": 8.41898533299991,
+      "answer": "The image features a close-up of several stuffed bears, with a prominent brown bear in the foreground and a lighter brown bear positioned behind it. A third, darker",
+      "memory_after": {
+        "allocated_mb": 4060.017333984375,
+        "driver_allocated_mb": 5995.4375
+      },
+      "measured": true
+    }
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.10.0",
+    "torchvision": "0.25.0",
+    "transformers": "5.2.0",
+    "accelerate": "1.15.0",
+    "Pillow": "12.3.0"
+  }
+}

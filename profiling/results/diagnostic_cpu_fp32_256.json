@@ -1,0 +1,33 @@
+{
+  "purpose": "single-image smoke test; first inference is cold",
+  "model": "Qwen/Qwen3-VL-2B-Instruct",
+  "task": "caption",
+  "device": "cpu",
+  "dtype": "torch.float32",
+  "attention_backend": "eager",
+  "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/test.jpg",
+  "image_size": [
+    256,
+    256
+  ],
+  "original_image_size": [
+    1276,
+    1276
+  ],
+  "max_image_side": 256,
+  "prompt": "Describe the visible objects and their spatial relationships in this image in two or three sentences. Do not speculate about things that are not visible.",
+  "max_new_tokens": 24,
+  "input_tokens_including_visual_placeholders": 101,
+  "generated_tokens_including_special_tokens": 24,
+  "load_seconds_including_download_if_needed": 25.858208624995314,
+  "first_request_seconds": 12.882599333010148,
+  "answer": "The image features a white, cylindrical roll of toilet paper with a simple black smiley face drawn on it, and two",
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.10.0",
+    "torchvision": "0.25.0",
+    "transformers": "5.2.0",
+    "accelerate": "1.15.0",
+    "Pillow": "12.3.0"
+  }
+}

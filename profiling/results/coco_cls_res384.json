@@ -1,0 +1,232 @@
+{
+  "purpose": "multi-image baseline; warm-up excluded from measured statistics",
+  "model": "Qwen/Qwen3-VL-2B-Instruct",
+  "task": "classification",
+  "device": "mps",
+  "dtype": "torch.float16",
+  "attention_backend": "eager",
+  "prompt": "Classify this image into exactly one of: tench, English springer, cassette player, chain saw, church, French horn, garbage truck, gas pump, golf ball, parachute. Return only the category name.",
+  "max_new_tokens": 16,
+  "max_image_side": 384,
+  "load_seconds_including_download_if_needed": 32.53731395900013,
+  "warmup": true,
+  "summary": {
+    "count": 10,
+    "mean_seconds": 0.9426207291001447,
+    "median_seconds": 0.8548663749998013,
+    "p90_seconds": 1.199892790999911,
+    "stdev_seconds": 0.2053953574806465,
+    "min_seconds": 0.7777868750008565,
+    "max_seconds": 1.3410923340006775
+  },
+  "images": [
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000139.jpg",
+      "image_size": [
+        384,
+        256
+      ],
+      "original_image_size": [
+        640,
+        426
+      ],
+      "input_tokens_including_visual_placeholders": 150,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 0.7777868750008565,
+      "answer": "garbage truck",
+      "memory_after": {
+        "allocated_mb": 4059.076904296875,
+        "driver_allocated_mb": 4835.921875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000285.jpg",
+      "image_size": [
+        352,
+        384
+      ],
+      "original_image_size": [
+        586,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 186,
+      "generated_tokens_including_special_tokens": 2,
+      "latency_seconds": 1.3410923340006775,
+      "answer": "bear",
+      "memory_after": {
+        "allocated_mb": 4060.21484375,
+        "driver_allocated_mb": 5876.0625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000632.jpg",
+      "image_size": [
+        384,
+        290
+      ],
+      "original_image_size": [
+        640,
+        483
+      ],
+      "input_tokens_including_visual_placeholders": 162,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 1.1360394160001306,
+      "answer": "garbage truck",
+      "memory_after": {
+        "allocated_mb": 4059.46484375,
+        "driver_allocated_mb": 5884.234375
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000724.jpg",
+      "image_size": [
+        288,
+        384
+      ],
+      "original_image_size": [
+        375,
+        500
+      ],
+      "input_tokens_including_visual_placeholders": 162,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 0.8625818749997052,
+      "answer": "garbage truck",
+      "memory_after": {
+        "allocated_mb": 4059.46484375,
+        "driver_allocated_mb": 5884.234375
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000776.jpg",
+      "image_size": [
+        257,
+        384
+      ],
+      "original_image_size": [
+        428,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 150,
+      "generated_tokens_including_special_tokens": 3,
+      "latency_seconds": 0.7832049580001694,
+      "answer": "tench",
+      "memory_after": {
+        "allocated_mb": 4059.0751953125,
+        "driver_allocated_mb": 5882.234375
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000785.jpg",
+      "image_size": [
+        384,
+        255
+      ],
+      "original_image_size": [
+        640,
+        425
+      ],
+      "input_tokens_including_visual_placeholders": 150,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 0.7859916249999515,
+      "answer": "golf ball",
+      "memory_after": {
+        "allocated_mb": 4059.076904296875,
+        "driver_allocated_mb": 5882.234375
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000802.jpg",
+      "image_size": [
+        254,
+        384
+      ],
+      "original_image_size": [
+        424,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 150,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 0.7910612919995401,
+      "answer": "garbage truck",
+      "memory_after": {
+        "allocated_mb": 4059.076904296875,
+        "driver_allocated_mb": 5868.234375
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000872.jpg",
+      "image_size": [
+        373,
+        384
+      ],
+      "original_image_size": [
+        621,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 198,
+      "generated_tokens_including_special_tokens": 3,
+      "latency_seconds": 1.199892790999911,
+      "answer": "tench",
+      "memory_after": {
+        "allocated_mb": 4060.020263671875,
+        "driver_allocated_mb": 5894.375
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000885.jpg",
+      "image_size": [
+        384,
+        256
+      ],
+      "original_image_size": [
+        640,
+        427
+      ],
+      "input_tokens_including_visual_placeholders": 150,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 0.8471508749998975,
+      "answer": "golf ball",
+      "memory_after": {
+        "allocated_mb": 4059.076904296875,
+        "driver_allocated_mb": 5862.375
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000001000.jpg",
+      "image_size": [
+        384,
+        288
+      ],
+      "original_image_size": [
+        640,
+        480
+      ],
+      "input_tokens_including_visual_placeholders": 162,
+      "generated_tokens_including_special_tokens": 3,
+      "latency_seconds": 0.9014052500006073,
+      "answer": "tench",
+      "memory_after": {
+        "allocated_mb": 4059.457763671875,
+        "driver_allocated_mb": 5862.375
+      },
+      "measured": true
+    }
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.10.0",
+    "torchvision": "0.25.0",
+    "transformers": "5.2.0",
+    "accelerate": "1.15.0",
+    "Pillow": "12.3.0"
+  }
+}
