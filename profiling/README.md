@@ -76,17 +76,24 @@ MPS peak values are sampling-based estimates. CPU memory is not measured.
 python profiling/summarize_results.py
 ```
 
-This reads the four default JSON files, writes
+This reads the 18 sweep JSON files in `profiling/results/sweep` and the four
+sample-scaling JSON files in `profiling/results/stability`, writes
 `profiling/results/summary_metrics.png`, and opens it in the system image
 viewer. Use `--no-show` to save the image without opening it.
 
-The table contains mean input and generated tokens, mean latency, P90 latency,
-and memory columns when the input JSON files contain peak-memory measurements.
+The report compares resolution scaling, MPS versus CPU, generation length, and
+n=10 versus n=50 sample scaling and long-run memory stability.
+Swap is used only for the resolution sweep because later experiments started
+with pre-existing system swap that cannot be attributed to an individual run.
 
 ## Output Notes
 
 - Warm-up requests are excluded from all reported statistics.
 - Model loading time is stored separately from inference latency.
+- Images are processed sequentially (batch size 1); the reported latency is per image.
+- Image loading, RGB conversion, and optional resizing happen before the timer starts.
 - `max_new_tokens` is an upper limit; actual generated token counts are recorded.
 - P90 uses the nearest-rank method.
 - MPS timing includes explicit synchronization around each measured request.
+- Classification uses a fixed ten-label prompt on COCO images; these runs do not measure COCO accuracy.
+- The recorded CPU runs use FP32 and MPS runs use FP16, so their speed difference includes precision.
