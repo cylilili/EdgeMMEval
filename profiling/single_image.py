@@ -1,6 +1,6 @@
-"""First experiment: one image, one Qwen model, two workloads.
+"""Measure single-image inference with a Qwen, Gemma, or SmolVLM2 model.
 
-This is a runnability check, not a stage-level benchmark.
+This records request-level latency and memory, not stage-level timing.
 """
 import argparse
 import importlib.metadata
@@ -13,7 +13,9 @@ import time
 from pathlib import Path
 
 
-MODEL_ID = "Qwen/Qwen3-VL-2B-Instruct"
+DEFAULT_MODEL_ID = "Qwen/Qwen3-VL-2B-Instruct"
+GEMMA_MODEL_ID = "google/gemma-3n-E2B-it"
+SMOL_MODEL_ID = "HuggingFaceTB/SmolVLM2-2.2B-Instruct"
 LABELS = (
     "tench, English springer, cassette player, chain saw, church, "
     "French horn, garbage truck, gas pump, golf ball, parachute"
@@ -22,7 +24,7 @@ LABELS = (
 
 def versions():
     result = {"python": platform.python_version()}
-    for name in ("torch", "torchvision", "transformers", "accelerate", "Pillow"):
+    for name in ("torch", "torchvision", "transformers", "accelerate", "Pillow", "timm", "num2words"):
         try:
             result[name] = importlib.metadata.version(name)
         except importlib.metadata.PackageNotFoundError:
@@ -39,12 +41,17 @@ def main():
                         help="Directory of JPG/PNG images to measure")
     parser.add_argument("--max-images", type=int, default=10)
     parser.add_argument("--task", choices=("classification", "caption"), default="caption")
+    parser.add_argument("--model-id", choices=(DEFAULT_MODEL_ID, GEMMA_MODEL_ID, SMOL_MODEL_ID),
+                        default=DEFAULT_MODEL_ID,
+                        help="Hugging Face model to profile (default: Qwen3-VL-2B-Instruct)")
     parser.add_argument("--device", choices=("auto", "mps", "cuda", "cpu"), default="auto")
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument("--dtype", choices=("auto", "float16", "bfloat16", "float32"), default="auto")
     parser.add_argument("--max-image-side", type=int, default=0,
                         help="Resize the longest side before processing; 0 keeps original size")
     parser.add_argument("--local-files-only", action="store_true", help="Use cached model files without downloading")
+    parser.add_argument("--load-on-cpu-first", action="store_true",
+                        help="Load weights on CPU, then move to MPS; avoids one large MPS allocator warm-up allocation")
     parser.add_argument("--no-warmup", action="store_true",
                         help="Do not run one unmeasured warm-up request before measurements")
     parser.add_argument("--memory-sample-interval-ms", type=float, default=10.0,
@@ -80,7 +87,12 @@ def main():
 
     import torch
     from PIL import Image
-    from transformers import AutoProcessor, Qwen3VLForConditionalGeneration
+    from transformers import (
+        AutoProcessor,
+        Gemma3nForConditionalGeneration,
+        Qwen3VLForConditionalGeneration,
+        SmolVLMForConditionalGeneration,
+    )
 
     device = args.device
     if device == "auto":
@@ -90,6 +102,8 @@ def main():
         parser.error("MPS is unavailable in this Python/PyTorch environment")
     if device == "cuda" and not torch.cuda.is_available():
         parser.error("CUDA is unavailable in this Python/PyTorch environment")
+    if args.load_on_cpu_first and device != "mps":
+        parser.error("--load-on-cpu-first requires --device mps")
     dtype = (torch.float32 if device == "cpu" else torch.float16) if args.dtype == "auto" else getattr(torch, args.dtype)
 
     def synchronize():
@@ -98,14 +112,24 @@ def main():
         elif device == "mps":
             torch.mps.synchronize()
 
-    print(f"Loading {MODEL_ID} on {device} ({dtype}). First use downloads weights.", flush=True)
+    print(f"Loading {args.model_id} on {device} ({dtype}). First use downloads weights.", flush=True)
     start = time.perf_counter()
-    processor = AutoProcessor.from_pretrained(MODEL_ID, local_files_only=args.local_files_only)
-    model = Qwen3VLForConditionalGeneration.from_pretrained(
-        MODEL_ID, dtype=dtype, device_map={"": device},
+    processor = AutoProcessor.from_pretrained(args.model_id, local_files_only=args.local_files_only)
+    model_class = {
+        DEFAULT_MODEL_ID: Qwen3VLForConditionalGeneration,
+        GEMMA_MODEL_ID: Gemma3nForConditionalGeneration,
+        SMOL_MODEL_ID: SmolVLMForConditionalGeneration,
+    }[args.model_id]
+    load_device = "cpu" if args.load_on_cpu_first else device
+    model = model_class.from_pretrained(
+        args.model_id, dtype=dtype, device_map={"": load_device},
         attn_implementation="eager",
         local_files_only=args.local_files_only,
-    ).eval()
+    )
+    if args.load_on_cpu_first:
+        print("Moving model from CPU to MPS; this can use substantial unified memory.", flush=True)
+        model = model.to(device)
+    model.eval()
     synchronize()
     load_s = time.perf_counter() - start
     print(f"Model loaded in {load_s:.1f}s. Preparing image...", flush=True)
@@ -243,6 +267,13 @@ def main():
                 output = model.generate(**inputs, max_new_tokens=args.max_new_tokens, do_sample=False)
             generated = output[0, input_tokens:]
             answer = processor.decode(generated, skip_special_tokens=True).strip()
+            empty_answer_diagnostics = {}
+            if not answer:
+                empty_answer_diagnostics = {
+                    "raw_generated_text": processor.decode(generated, skip_special_tokens=False),
+                    "generated_token_ids": generated.tolist(),
+                }
+                print("  Warning: generated tokens decoded to an empty answer; raw tokens saved in JSON.", flush=True)
             synchronize()
             elapsed_s = time.perf_counter() - start
         finally:
@@ -258,6 +289,7 @@ def main():
             "input_tokens_including_visual_placeholders": input_tokens,
             "generated_tokens_including_special_tokens": generated.numel(),
             "latency_seconds": elapsed_s, "answer": answer,
+            **empty_answer_diagnostics,
             "memory": memory, "memory_after": memory_after,
             "measured": measured,
         }
@@ -316,8 +348,9 @@ def main():
         summary["memory"] = memory_summary
     record = {
         "purpose": "multi-image baseline; warm-up excluded from measured statistics",
-        "model": MODEL_ID, "task": args.task, "device": device,
+        "model": args.model_id, "task": args.task, "device": device,
         "dtype": str(dtype), "attention_backend": "eager",
+        "load_on_cpu_first": args.load_on_cpu_first,
         "prompt": prompt, "max_new_tokens": args.max_new_tokens,
         "max_image_side": args.max_image_side,
         "load_seconds_including_download_if_needed": load_s,

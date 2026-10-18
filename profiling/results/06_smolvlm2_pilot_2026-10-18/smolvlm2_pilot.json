@@ -1,0 +1,86 @@
+{
+  "purpose": "multi-image baseline; warm-up excluded from measured statistics",
+  "model": "HuggingFaceTB/SmolVLM2-2.2B-Instruct",
+  "task": "caption",
+  "device": "mps",
+  "dtype": "torch.float16",
+  "attention_backend": "eager",
+  "load_on_cpu_first": false,
+  "prompt": "Describe the visible objects and their spatial relationships in this image in two or three sentences. Do not speculate about things that are not visible.",
+  "max_new_tokens": 64,
+  "max_image_side": 256,
+  "load_seconds_including_download_if_needed": 76.09242858300058,
+  "warmup": true,
+  "summary": {
+    "count": 1,
+    "mean_seconds": 43.26049229199998,
+    "median_seconds": 43.26049229199998,
+    "p90_seconds": 43.26049229199998,
+    "stdev_seconds": 0.0,
+    "min_seconds": 43.26049229199998,
+    "max_seconds": 43.26049229199998,
+    "memory": {
+      "peak_allocated_mb": {
+        "mean_mb": 5520.15185546875,
+        "max_mb": 5520.15185546875
+      },
+      "peak_driver_allocated_mb": {
+        "mean_mb": 13930.734375,
+        "max_mb": 13930.734375
+      },
+      "peak_increment_allocated_mb": {
+        "mean_mb": 1234.746826171875,
+        "max_mb": 1234.746826171875
+      },
+      "peak_increment_driver_mb": {
+        "mean_mb": 2694.0,
+        "max_mb": 2694.0
+      }
+    }
+  },
+  "images": [
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000139.jpg",
+      "image_size": [
+        256,
+        170
+      ],
+      "original_image_size": [
+        640,
+        426
+      ],
+      "input_tokens_including_visual_placeholders": 1118,
+      "generated_tokens_including_special_tokens": 41,
+      "latency_seconds": 43.26049229199998,
+      "answer": "The image shows a living room with a dining area, a kitchen, and a television. There are chairs, a table, and a fireplace in the room. A woman is standing in the kitchen.",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4285.405029296875,
+        "baseline_driver_allocated_mb": 11236.734375,
+        "peak_allocated_mb": 5520.15185546875,
+        "peak_driver_allocated_mb": 13930.734375,
+        "peak_increment_allocated_mb": 1234.746826171875,
+        "peak_increment_driver_mb": 2694.0,
+        "after_allocated_mb": 4311.08837890625,
+        "after_driver_allocated_mb": 13284.734375,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4311.08837890625,
+        "driver_allocated_mb": 13284.734375
+      },
+      "measured": true
+    }
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.10.0",
+    "torchvision": "0.25.0",
+    "transformers": "5.2.0",
+    "accelerate": "1.15.0",
+    "Pillow": "12.3.0",
+    "timm": "1.0.30",
+    "num2words": "0.5.14"
+  }
+}

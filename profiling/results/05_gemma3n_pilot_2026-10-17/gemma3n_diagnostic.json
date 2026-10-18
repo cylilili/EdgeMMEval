@@ -1,0 +1,151 @@
+{
+  "purpose": "multi-image baseline; warm-up excluded from measured statistics",
+  "model": "google/gemma-3n-E2B-it",
+  "task": "caption",
+  "device": "mps",
+  "dtype": "torch.float16",
+  "attention_backend": "eager",
+  "load_on_cpu_first": true,
+  "prompt": "Describe the visible objects and their spatial relationships in this image in two or three sentences. Do not speculate about things that are not visible.",
+  "max_new_tokens": 64,
+  "max_image_side": 256,
+  "load_seconds_including_download_if_needed": 110.44954466600029,
+  "warmup": true,
+  "summary": {
+    "count": 1,
+    "mean_seconds": 44.86290229199949,
+    "median_seconds": 44.86290229199949,
+    "p90_seconds": 44.86290229199949,
+    "stdev_seconds": 0.0,
+    "min_seconds": 44.86290229199949,
+    "max_seconds": 44.86290229199949,
+    "memory": {
+      "peak_allocated_mb": {
+        "mean_mb": 10571.478759765625,
+        "max_mb": 10571.478759765625
+      },
+      "peak_driver_allocated_mb": {
+        "mean_mb": 12949.109375,
+        "max_mb": 12949.109375
+      },
+      "peak_increment_allocated_mb": {
+        "mean_mb": 196.48193359375,
+        "max_mb": 196.48193359375
+      },
+      "peak_increment_driver_mb": {
+        "mean_mb": 52.015625,
+        "max_mb": 52.015625
+      }
+    }
+  },
+  "images": [
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000139.jpg",
+      "image_size": [
+        256,
+        170
+      ],
+      "original_image_size": [
+        640,
+        426
+      ],
+      "input_tokens_including_visual_placeholders": 295,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 44.86290229199949,
+      "answer": "",
+      "raw_generated_text": "<pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad><pad>",
+      "generated_token_ids": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 10374.996826171875,
+        "baseline_driver_allocated_mb": 12897.09375,
+        "peak_allocated_mb": 10571.478759765625,
+        "peak_driver_allocated_mb": 12949.109375,
+        "peak_increment_allocated_mb": 196.48193359375,
+        "peak_increment_driver_mb": 52.015625,
+        "after_allocated_mb": 10378.386962890625,
+        "after_driver_allocated_mb": 12897.09375,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 10378.386962890625,
+        "driver_allocated_mb": 12897.09375
+      },
+      "measured": true
+    }
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.10.0",
+    "torchvision": "0.25.0",
+    "transformers": "5.2.0",
+    "accelerate": "1.15.0",
+    "Pillow": "12.3.0"
+  }
+}

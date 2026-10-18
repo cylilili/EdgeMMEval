@@ -1,0 +1,383 @@
+{
+  "purpose": "multi-image baseline; warm-up excluded from measured statistics",
+  "model": "HuggingFaceTB/SmolVLM2-2.2B-Instruct",
+  "task": "caption",
+  "device": "mps",
+  "dtype": "torch.float16",
+  "attention_backend": "eager",
+  "load_on_cpu_first": false,
+  "prompt": "Describe the visible objects and their spatial relationships in this image in two or three sentences. Do not speculate about things that are not visible.",
+  "max_new_tokens": 64,
+  "max_image_side": 384,
+  "load_seconds_including_download_if_needed": 66.84649620799973,
+  "warmup": true,
+  "summary": {
+    "count": 10,
+    "mean_seconds": 34.848856683500344,
+    "median_seconds": 27.680966396001168,
+    "p90_seconds": 65.31063091599935,
+    "stdev_seconds": 17.26417169711031,
+    "min_seconds": 22.984585834001336,
+    "max_seconds": 69.09939670899985,
+    "memory": {
+      "peak_allocated_mb": {
+        "mean_mb": 5648.4068359375,
+        "max_mb": 5923.83740234375
+      },
+      "peak_driver_allocated_mb": {
+        "mean_mb": 16647.9421875,
+        "max_mb": 17835.921875
+      },
+      "peak_increment_allocated_mb": {
+        "mean_mb": 1363.001806640625,
+        "max_mb": 1638.432373046875
+      },
+      "peak_increment_driver_mb": {
+        "mean_mb": 1110.4125,
+        "max_mb": 2982.0
+      }
+    }
+  },
+  "images": [
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000139.jpg",
+      "image_size": [
+        384,
+        256
+      ],
+      "original_image_size": [
+        640,
+        426
+      ],
+      "input_tokens_including_visual_placeholders": 1118,
+      "generated_tokens_including_special_tokens": 57,
+      "latency_seconds": 69.09939670899985,
+      "answer": "The image shows a living room with a dining area, kitchen, and a television. The living room has a television mounted on the wall, a rug on the floor, and a fireplace. The dining area has a table with chairs, and the kitchen has cabinets and a sink.",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4285.405029296875,
+        "baseline_driver_allocated_mb": 13829.03125,
+        "peak_allocated_mb": 5520.15185546875,
+        "peak_driver_allocated_mb": 15921.03125,
+        "peak_increment_allocated_mb": 1234.746826171875,
+        "peak_increment_driver_mb": 2092.0,
+        "after_allocated_mb": 4311.08837890625,
+        "after_driver_allocated_mb": 15275.03125,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4311.08837890625,
+        "driver_allocated_mb": 15275.03125
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000285.jpg",
+      "image_size": [
+        352,
+        384
+      ],
+      "original_image_size": [
+        586,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 1451,
+      "generated_tokens_including_special_tokens": 37,
+      "latency_seconds": 65.31063091599935,
+      "answer": "In the image, there is a brown bear with a large head and a thick coat of fur. The bear is sitting on a grassy field and is looking directly at the camera.",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4285.405029296875,
+        "baseline_driver_allocated_mb": 15275.03125,
+        "peak_allocated_mb": 5910.25634765625,
+        "peak_driver_allocated_mb": 17245.109375,
+        "peak_increment_allocated_mb": 1624.851318359375,
+        "peak_increment_driver_mb": 1970.078125,
+        "after_allocated_mb": 4321.143310546875,
+        "after_driver_allocated_mb": 14853.921875,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4321.143310546875,
+        "driver_allocated_mb": 14853.921875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000632.jpg",
+      "image_size": [
+        384,
+        290
+      ],
+      "original_image_size": [
+        640,
+        483
+      ],
+      "input_tokens_including_visual_placeholders": 1451,
+      "generated_tokens_including_special_tokens": 38,
+      "latency_seconds": 30.766732874999434,
+      "answer": "The image shows a bedroom with a bed covered in blue bedding, a dresser with a mirror, a bookshelf filled with books, and a window with a view of trees outside.",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4285.405029296875,
+        "baseline_driver_allocated_mb": 14853.921875,
+        "peak_allocated_mb": 5904.77734375,
+        "peak_driver_allocated_mb": 17835.921875,
+        "peak_increment_allocated_mb": 1619.372314453125,
+        "peak_increment_driver_mb": 2982.0,
+        "after_allocated_mb": 4321.271484375,
+        "after_driver_allocated_mb": 15897.9375,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4321.271484375,
+        "driver_allocated_mb": 15897.9375
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000724.jpg",
+      "image_size": [
+        288,
+        384
+      ],
+      "original_image_size": [
+        375,
+        500
+      ],
+      "input_tokens_including_visual_placeholders": 1119,
+      "generated_tokens_including_special_tokens": 51,
+      "latency_seconds": 22.984585834001336,
+      "answer": "In the image, there is a stop sign with the word \"STOP\" written on it. The stop sign is attached to a pole and is located on the side of a road. The background of the image shows a street with trees and buildings.",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4285.405029296875,
+        "baseline_driver_allocated_mb": 15897.9375,
+        "peak_allocated_mb": 5527.138427734375,
+        "peak_driver_allocated_mb": 16537.9375,
+        "peak_increment_allocated_mb": 1241.7333984375,
+        "peak_increment_driver_mb": 640.0,
+        "after_allocated_mb": 4311.08837890625,
+        "after_driver_allocated_mb": 15915.96875,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4311.08837890625,
+        "driver_allocated_mb": 15915.96875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000776.jpg",
+      "image_size": [
+        257,
+        384
+      ],
+      "original_image_size": [
+        428,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 1119,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 25.449617792000936,
+      "answer": "In the image, there are three teddy bears of different colors, brown, orange, and beige, placed on a blue surface. The teddy bears are positioned close to each other, with the brown teddy bear on the left, the orange teddy bear in the middle, and the beige teddy bear on the right.",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4285.405029296875,
+        "baseline_driver_allocated_mb": 15915.96875,
+        "peak_allocated_mb": 5524.0439453125,
+        "peak_driver_allocated_mb": 16343.984375,
+        "peak_increment_allocated_mb": 1238.638916015625,
+        "peak_increment_driver_mb": 428.015625,
+        "after_allocated_mb": 4311.026611328125,
+        "after_driver_allocated_mb": 15916.125,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4311.026611328125,
+        "driver_allocated_mb": 15916.125
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000785.jpg",
+      "image_size": [
+        384,
+        255
+      ],
+      "original_image_size": [
+        640,
+        425
+      ],
+      "input_tokens_including_visual_placeholders": 1118,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 25.66873008299808,
+      "answer": "In the image, a person is skiing down a snowy slope. The skier is wearing a red jacket, black pants, and a black and white striped hat. They are holding ski poles and have blue skis on their feet. The skier is positioned in the center of the image, with the snowy slope stretching",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4285.405029296875,
+        "baseline_driver_allocated_mb": 15916.125,
+        "peak_allocated_mb": 5522.246337890625,
+        "peak_driver_allocated_mb": 16344.140625,
+        "peak_increment_allocated_mb": 1236.84130859375,
+        "peak_increment_driver_mb": 428.015625,
+        "after_allocated_mb": 4311.08837890625,
+        "after_driver_allocated_mb": 15898.125,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4311.08837890625,
+        "driver_allocated_mb": 15898.125
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000802.jpg",
+      "image_size": [
+        254,
+        384
+      ],
+      "original_image_size": [
+        424,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 1119,
+      "generated_tokens_including_special_tokens": 53,
+      "latency_seconds": 23.56455016700056,
+      "answer": "The image shows a kitchen with wooden cabinets, a white refrigerator, and a white stove. The stove is located on the left side of the image, while the refrigerator is on the right side. The cabinets are arranged in a row above the stove and refrigerator.",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4285.405029296875,
+        "baseline_driver_allocated_mb": 15898.125,
+        "peak_allocated_mb": 5520.39404296875,
+        "peak_driver_allocated_mb": 16524.125,
+        "peak_increment_allocated_mb": 1234.989013671875,
+        "peak_increment_driver_mb": 626.0,
+        "after_allocated_mb": 4311.08837890625,
+        "after_driver_allocated_mb": 15910.125,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4311.08837890625,
+        "driver_allocated_mb": 15910.125
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000872.jpg",
+      "image_size": [
+        373,
+        384
+      ],
+      "original_image_size": [
+        621,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 1451,
+      "generated_tokens_including_special_tokens": 56,
+      "latency_seconds": 30.282389667001553,
+      "answer": "In the image, there are two baseball players running on a field. One player is wearing a white shirt and gray pants, while the other is wearing a green shirt and gray pants. They are running towards a baseball glove that is being held by a person in the background.",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4285.405029296875,
+        "baseline_driver_allocated_mb": 15910.125,
+        "peak_allocated_mb": 5923.83740234375,
+        "peak_driver_allocated_mb": 16744.125,
+        "peak_increment_allocated_mb": 1638.432373046875,
+        "peak_increment_driver_mb": 834.0,
+        "after_allocated_mb": 4319.291748046875,
+        "after_driver_allocated_mb": 15980.515625,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4319.291748046875,
+        "driver_allocated_mb": 15980.515625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000885.jpg",
+      "image_size": [
+        384,
+        256
+      ],
+      "original_image_size": [
+        640,
+        427
+      ],
+      "input_tokens_including_visual_placeholders": 1118,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 27.20406629200079,
+      "answer": "In the image, a tennis player is captured in the midst of a powerful swing, his body leaning forward and his racket extended towards the ball. He is dressed in a white shirt and shorts, with a white cap on his head. The tennis court beneath him is a vibrant green, contrasting with the blue of the",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4285.405029296875,
+        "baseline_driver_allocated_mb": 15980.515625,
+        "peak_allocated_mb": 5569.44970703125,
+        "peak_driver_allocated_mb": 16454.53125,
+        "peak_increment_allocated_mb": 1284.044677734375,
+        "peak_increment_driver_mb": 474.015625,
+        "after_allocated_mb": 4318.96337890625,
+        "after_driver_allocated_mb": 15898.515625,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4318.96337890625,
+        "driver_allocated_mb": 15898.515625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000001000.jpg",
+      "image_size": [
+        384,
+        288
+      ],
+      "original_image_size": [
+        640,
+        480
+      ],
+      "input_tokens_including_visual_placeholders": 1118,
+      "generated_tokens_including_special_tokens": 64,
+      "latency_seconds": 28.157866500001546,
+      "answer": "In the image, there is a group of people standing on a tennis court. Among them, there are children and adults. The children are wearing tennis attire, and some of them are holding tennis rackets. The adults are also wearing tennis attire. The tennis court is surrounded by a fence, and there are trees in",
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4285.405029296875,
+        "baseline_driver_allocated_mb": 15898.515625,
+        "peak_allocated_mb": 5561.77294921875,
+        "peak_driver_allocated_mb": 16528.515625,
+        "peak_increment_allocated_mb": 1276.367919921875,
+        "peak_increment_driver_mb": 630.0,
+        "after_allocated_mb": 4318.96337890625,
+        "after_driver_allocated_mb": 15878.515625,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4318.96337890625,
+        "driver_allocated_mb": 15878.515625
+      },
+      "measured": true
+    }
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.10.0",
+    "torchvision": "0.25.0",
+    "transformers": "5.2.0",
+    "accelerate": "1.15.0",
+    "Pillow": "12.3.0",
+    "timm": "1.0.30",
+    "num2words": "0.5.14"
+  }
+}

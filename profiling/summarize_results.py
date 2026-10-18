@@ -1,4 +1,4 @@
-"""Analyze profiling sweep results and render an English PNG report."""
+"""Analyze one profiling experiment and render an English PNG report."""
 
 from __future__ import annotations
 
@@ -11,12 +11,6 @@ from pathlib import Path
 from typing import Any
 
 from PIL import Image, ImageDraw, ImageFont
-
-
-SCRIPT_DIR = Path(__file__).resolve().parent
-DEFAULT_INPUT = SCRIPT_DIR / "results/sweep"
-DEFAULT_STABILITY_INPUT = SCRIPT_DIR / "results/stability"
-DEFAULT_OUTPUT = SCRIPT_DIR / "results/summary_metrics.png"
 
 
 def load_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
@@ -60,11 +54,33 @@ def draw_centered_text(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--input-dir", type=Path, default=DEFAULT_INPUT)
-    parser.add_argument("--stability-dir", type=Path, default=DEFAULT_STABILITY_INPUT)
-    parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument(
+        "--experiment-dir",
+        type=Path,
+        help="Experiment directory containing sweep/ and optionally stability/",
+    )
+    parser.add_argument(
+        "--input-dir",
+        type=Path,
+        help="Legacy override for the sweep directory",
+    )
+    parser.add_argument(
+        "--stability-dir",
+        type=Path,
+        help="Legacy override for the stability directory",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="Output PNG; defaults to EXPERIMENT_DIR/summary_metrics.png",
+    )
     parser.add_argument("--no-show", action="store_true")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.experiment_dir and (args.input_dir or args.stability_dir):
+        parser.error("--experiment-dir cannot be combined with --input-dir or --stability-dir")
+    if not args.experiment_dir and not args.input_dir:
+        parser.error("provide --experiment-dir, or provide --input-dir for legacy usage")
+    return args
 
 
 def read_number(path: Path, pattern: str) -> float:
@@ -78,7 +94,7 @@ def read_number(path: Path, pattern: str) -> float:
     return float(match.group(1))
 
 
-def load_result(path: Path) -> dict[str, Any]:
+def load_result(path: Path, group: str | None = None) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
     images = [item for item in data["images"] if item.get("measured") is True]
     if not images:
@@ -141,7 +157,8 @@ def load_result(path: Path) -> dict[str, Any]:
 
     return {
         "name": path.stem,
-        "group": path.parent.name,
+        "model": data.get("model", "unknown model"),
+        "group": group or path.parent.name,
         "task": data["task"],
         "device": data["device"],
         "resolution": data["max_image_side"],
@@ -267,6 +284,10 @@ def draw_table(
 
 
 def render_report(results: list[dict[str, Any]]) -> Image.Image:
+    models = {row["model"] for row in results}
+    if len(models) != 1:
+        raise ValueError("A report must contain results from exactly one model")
+    model_name = next(iter(models)).split("/")[-1]
     resolution = [row for row in results if row["name"].startswith("resolution_")]
     resolution.sort(
         key=lambda row: (
@@ -286,13 +307,17 @@ def render_report(results: list[dict[str, Any]]) -> Image.Image:
         )
     )
 
+    groups = (resolution, hardware, generation, stability)
+    if not any(groups):
+        raise ValueError("No recognized profiling result groups were found")
+    section_height = lambda row_count: 189 + 62 * row_count
+    height = 165 + sum(section_height(len(group)) for group in groups if group)
     width = 2380
-    height = 2320
     image = Image.new("RGB", (width, height), "#F4F7FB")
     draw = ImageDraw.Draw(image)
     title_font = load_font(38, bold=True)
     subtitle_font = load_font(21)
-    draw.text((50, 34), "Qwen3-VL Profiling Analysis", font=title_font, fill="#172033")
+    draw.text((50, 34), f"{model_name} Profiling Analysis", font=title_font, fill="#172033")
     draw.text(
         (50, 88),
         "Warm-up excluded; sample counts are shown per experiment; memory values are MPS sampling estimates.",
@@ -300,6 +325,7 @@ def render_report(results: list[dict[str, Any]]) -> Image.Image:
         fill="#526175",
     )
 
+    y = 135
     resolution_rows = []
     for row in resolution:
         resolution_name = "Original" if row["resolution"] == 0 else f"{row['resolution']} px"
@@ -326,39 +352,60 @@ def render_report(results: list[dict[str, Any]]) -> Image.Image:
                 pressure,
             ]
         )
-    y = draw_table(
-        image,
-        135,
-        "Resolution scaling",
-        [
-            "Task",
-            "Resolution",
-            "Mean input\ntokens",
-            "Mean output\ntokens",
-            "Mean\nlatency",
-            "P90\nlatency",
-            "Mean peak\nmemory (MB)",
-            "Mean request\nincrease (MB)",
-            "Swap before\n(MB)",
-            "Swap after\n(MB)",
-            "Swap delta\n(MB)",
-            "Free memory\npercentage",
-        ],
-        resolution_rows,
-        [185, 155, 175, 175, 170, 170, 205, 220, 170, 170, 160, 245],
-        (
-            "System swap rose during the 768 px Caption run; this does not establish a size threshold. "
-            "The source images top out at 640 px, so 768 px and Original use the same visual inputs. "
-            "*Swap delta is not attributed when swap existed before the run."
-        ),
-    )
+    if resolution_rows:
+        swap_onsets = [
+            row
+            for row in resolution
+            if row["swap_before_mb"] == 0 and (row["swap_after_mb"] or 0) > 0
+        ]
+        onset_text = "No new Swap allocation was observed from a zero-Swap start."
+        if swap_onsets:
+            onset = swap_onsets[0]
+            onset_resolution = (
+                "Original" if onset["resolution"] == 0 else f"{onset['resolution']} px"
+            )
+            onset_task = "Classification" if onset["task"] == "classification" else "Caption"
+            onset_text = (
+                f"System Swap first rose from zero during {onset_task} at {onset_resolution} "
+                f"(+{onset['swap_delta_mb']:.1f} MB)."
+            )
+        max_source_side = max(row["original_max_side"] for row in resolution)
+        y = draw_table(
+            image,
+            y,
+            "Resolution scaling",
+            [
+                "Task",
+                "Resolution",
+                "Mean input\ntokens",
+                "Mean output\ntokens",
+                "Mean\nlatency",
+                "P90\nlatency",
+                "Mean peak\nmemory (MB)",
+                "Mean request\nincrease (MB)",
+                "Swap before\n(MB)",
+                "Swap after\n(MB)",
+                "Swap delta\n(MB)",
+                "Free memory\npercentage",
+            ],
+            resolution_rows,
+            [185, 155, 175, 175, 170, 170, 205, 220, 170, 170, 160, 245],
+            (
+                f"{onset_text} Source images top out at {max_source_side} px. "
+                "*Swap delta is not attributed when Swap existed before the run."
+            ),
+        )
 
     hardware_rows = []
     for task in ("classification", "caption"):
         task_rows = [row for row in hardware if row["task"] == task]
-        cpu = next(row for row in task_rows if row["device"] == "cpu")
-        mps = next(row for row in task_rows if row["device"] == "mps")
-        speedup = cpu["mean_seconds"] / mps["mean_seconds"]
+        cpu = next((row for row in task_rows if row["device"] == "cpu"), None)
+        mps = next((row for row in task_rows if row["device"] == "mps"), None)
+        speedup = (
+            cpu["mean_seconds"] / mps["mean_seconds"]
+            if cpu is not None and mps is not None
+            else None
+        )
         for row in sorted(task_rows, key=lambda item: item["device"], reverse=True):
             hardware_rows.append(
                 [
@@ -366,24 +413,28 @@ def render_report(results: list[dict[str, Any]]) -> Image.Image:
                     row["device"].upper(),
                     fmt(row["mean_seconds"], 3, " s"),
                     fmt(row["p90_seconds"], 3, " s"),
-                    fmt(speedup, 2, "x") if row["device"] == "mps" else "1.00x",
+                    (
+                        fmt(speedup, 2, "x")
+                        if row["device"] == "mps" and speedup is not None
+                        else "1.00x" if row["device"] == "cpu" else "N/A"
+                    ),
                     fmt(row["mean_peak_memory_mb"], 1),
                 ]
             )
-    y = draw_table(
-        image,
-        y,
-        "Hardware backend",
-        ["Task", "Backend", "Mean latency", "P90 latency", "Speedup vs CPU", "Mean peak\nmemory (MB)"],
-        hardware_rows,
-        [285, 190, 260, 260, 270, 310],
-        (
-            "MPS used FP16 and CPU used FP32; the speedup includes both backend and precision differences. "
-            "System swap is excluded because it pre-dated these runs."
-        ),
-    )
+    if hardware_rows:
+        y = draw_table(
+            image,
+            y,
+            "Hardware backend",
+            ["Task", "Backend", "Mean latency", "P90 latency", "Speedup vs CPU", "Mean peak\nmemory (MB)"],
+            hardware_rows,
+            [285, 190, 260, 260, 270, 310],
+            (
+                "MPS uses FP16 and CPU uses FP32 by default; speedup therefore includes both backend "
+                "and precision differences."
+            ),
+        )
 
-    intercept, slope, r_squared = linear_regression(generation)
     generation_rows = [
         [
             str(row["max_new_tokens"]),
@@ -395,20 +446,24 @@ def render_report(results: list[dict[str, Any]]) -> Image.Image:
         ]
         for row in generation
     ]
-    y = draw_table(
-        image,
-        y,
-        "Generation length",
-        ["Token limit", "Mean actual\ntokens", "Mean latency", "P90 latency", "Mean peak\nmemory (MB)", "Mean request\nincrease (MB)"],
-        generation_rows,
-        [230, 260, 270, 270, 320, 340],
-        (
-            f"Fit using actual output tokens: latency = {intercept:.3f} + "
-            f"{slope:.4f} x tokens seconds (R-squared = {r_squared:.4f}). "
-            "This slope is for total timed requests, not isolated decode time. "
-            "System swap is excluded because it pre-dated these runs."
-        ),
-    )
+    if generation_rows:
+        generation_note = "At least two distinct generated-token means are required for regression."
+        if len({row["mean_generated_tokens"] for row in generation}) >= 2:
+            intercept, slope, r_squared = linear_regression(generation)
+            generation_note = (
+                f"Fit using actual output tokens: latency = {intercept:.3f} + "
+                f"{slope:.4f} x tokens seconds (R-squared = {r_squared:.4f}). "
+                "This slope is for total timed requests, not isolated decode time."
+            )
+        y = draw_table(
+            image,
+            y,
+            "Generation length",
+            ["Token limit", "Mean actual\ntokens", "Mean latency", "P90 latency", "Mean peak\nmemory (MB)", "Mean request\nincrease (MB)"],
+            generation_rows,
+            [230, 260, 270, 270, 320, 340],
+            generation_note,
+        )
     stability_rows = [
         [
             "Classification" if row["task"] == "classification" else "Caption",
@@ -428,53 +483,74 @@ def render_report(results: list[dict[str, Any]]) -> Image.Image:
         ]
         for row in stability
     ]
-    draw_table(
-        image,
-        y,
-        "Sample scaling and stability",
-        [
-            "Task",
-            "n",
-            "Mean input\ntokens",
-            "Input token\nSD",
-            "Mean\nlatency",
-            "P90\nlatency",
-            "P99\nlatency",
-            "Latency\nSD",
-            "Mean peak\nmemory (MB)",
-            "Driver delta / late slope\n(MB, MB/request)",
-            "Post-request allocated\ndelta (MB)",
-        ],
-        stability_rows,
-        [190, 90, 175, 170, 170, 170, 170, 170, 215, 280, 260],
-        (
-            "At n=50, Caption P99 reaches 21.303 s. Post-request allocated memory changes by about "
-            "1 MB; driver growth may include MPS pool expansion and does not alone establish a leak."
-        ),
-    )
+    if stability_rows:
+        largest_caption = max(
+            (row for row in stability if row["task"] == "caption"),
+            key=lambda row: row["sample_count"],
+            default=None,
+        )
+        stability_note = (
+            "Driver-memory growth may include reusable MPS allocator pools and does not alone establish a leak."
+        )
+        if largest_caption is not None:
+            stability_note = (
+                f"At n={largest_caption['sample_count']}, Caption P99 is "
+                f"{largest_caption['p99_seconds']:.3f} s. Post-request allocated-memory delta is "
+                f"{fmt(largest_caption['after_allocated_delta_mb'], 1)} MB; driver growth may include "
+                "reusable MPS pools and does not alone establish a leak."
+            )
+        draw_table(
+            image,
+            y,
+            "Sample scaling and stability",
+            [
+                "Task",
+                "n",
+                "Mean input\ntokens",
+                "Input token\nSD",
+                "Mean\nlatency",
+                "P90\nlatency",
+                "P99\nlatency",
+                "Latency\nSD",
+                "Mean peak\nmemory (MB)",
+                "Driver delta / late slope\n(MB, MB/request)",
+                "Post-request allocated\ndelta (MB)",
+            ],
+            stability_rows,
+            [190, 90, 175, 170, 170, 170, 170, 170, 215, 280, 260],
+            stability_note,
+        )
     return image
 
 
 def main() -> None:
     args = parse_args()
-    paths = sorted(path for path in args.input_dir.glob("*.json") if not path.name.startswith("._"))
+    if args.experiment_dir:
+        input_dir = args.experiment_dir / "sweep"
+        stability_dir = args.experiment_dir / "stability"
+        output = args.output or args.experiment_dir / "summary_metrics.png"
+    else:
+        input_dir = args.input_dir
+        stability_dir = args.stability_dir or input_dir.parent / "stability"
+        output = args.output or input_dir.parent / "summary_metrics.png"
+
+    paths = sorted(path for path in input_dir.glob("*.json") if not path.name.startswith("._"))
     stability_paths = sorted(
-        path for path in args.stability_dir.glob("*.json") if not path.name.startswith("._")
+        path for path in stability_dir.glob("*.json") if not path.name.startswith("._")
     )
-    if len(paths) != 18:
-        raise SystemExit(f"error: expected 18 JSON files in {args.input_dir}, found {len(paths)}")
-    if len(stability_paths) != 4:
+    if not paths and not stability_paths:
         raise SystemExit(
-            f"error: expected 4 JSON files in {args.stability_dir}, found {len(stability_paths)}"
+            f"error: no JSON result files found in {input_dir} or {stability_dir}"
         )
     try:
-        results = [load_result(path) for path in paths + stability_paths]
+        results = [load_result(path, "sweep") for path in paths]
+        results.extend(load_result(path, "stability") for path in stability_paths)
         image = render_report(results)
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as error:
         raise SystemExit(f"error: {error}") from error
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    image.save(args.output, format="PNG")
-    print(f"Saved summary image: {args.output.resolve()}")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    image.save(output, format="PNG")
+    print(f"Saved summary image: {output.resolve()}")
     if not args.no_show:
         image.show(title="Profiling sweep analysis")
 
