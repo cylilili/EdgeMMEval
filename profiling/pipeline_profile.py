@@ -490,6 +490,28 @@ def main():
                   "the complete first forward"
               )
 
+            multimodal_projection_s = (
+                first_forward_s
+                - vision_encoder_s
+                - llm_prefill_s
+            )
+
+            if multimodal_projection_s <= 0:
+                raise RuntimeError(
+                    "Multimodal projection latency must be positive"
+                )
+
+            if multimodal_projection_s < merger_s:
+                raise RuntimeError(
+                    "Multimodal projection latency cannot be smaller "
+                    "than merger latency"
+                )
+
+            embedding_preparation_s = (
+                multimodal_projection_s
+                - merger_s
+            )
+            
             generated = output[0, input_tokens:]
             answer = processor.decode(generated, skip_special_tokens=True).strip()
             empty_answer_diagnostics = {}
@@ -519,7 +541,7 @@ def main():
             "stages_seconds": {
                 "image_preprocessing": preprocessing_s,
                 "vision_encoder": vision_encoder_s,
-                "multimodal_projection_mergers": merger_s,
+                "multimodal_projection": multimodal_projection_s,
                 "llm_prefill": llm_prefill_s,
             },
             "stage_diagnostics": {
@@ -536,6 +558,8 @@ def main():
                 "lm_head_calls": lm_head_calls,
                 "lm_head_durations_seconds": lm_head_durations,
                 "first_lm_head_seconds": first_lm_head_s,
+                "merger_seconds": merger_s,
+                "embedding_preparation_seconds": embedding_preparation_s,
             },
             **empty_answer_diagnostics,
             "memory": memory, "memory_after": memory_after,
