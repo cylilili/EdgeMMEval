@@ -1,0 +1,842 @@
+{
+  "purpose": "multi-image baseline; warm-up excluded from measured statistics",
+  "model": "Qwen/Qwen3-VL-2B-Instruct",
+  "task": "classification",
+  "device": "mps",
+  "dtype": "torch.float16",
+  "attention_backend": "eager",
+  "load_on_cpu_first": false,
+  "prompt": "Classify this image into exactly one of: tench, English springer, cassette player, chain saw, church, French horn, garbage truck, gas pump, golf ball, parachute. Return only the category name.",
+  "max_new_tokens": 16,
+  "max_image_side": 0,
+  "load_seconds_including_download_if_needed": 29.36335287499992,
+  "warmup": true,
+  "summary": {
+    "count": 10,
+    "mean_seconds": 5.614410129099928,
+    "median_seconds": 5.166835812499926,
+    "p90_seconds": 6.870106124999893,
+    "stdev_seconds": 1.1427310787552358,
+    "min_seconds": 3.9548455409999406,
+    "max_seconds": 7.940748624999969,
+    "memory": {
+      "peak_allocated_mb": {
+        "mean_mb": 4242.542822265625,
+        "max_mb": 4490.0029296875
+      },
+      "peak_driver_allocated_mb": {
+        "mean_mb": 6233.771875,
+        "max_mb": 6392.640625
+      },
+      "peak_increment_allocated_mb": {
+        "mean_mb": 184.596533203125,
+        "max_mb": 432.056640625
+      },
+      "peak_increment_driver_mb": {
+        "mean_mb": 60.871875,
+        "max_mb": 226.140625
+      }
+    },
+    "stages": {
+      "image_preprocessing": {
+        "mean_seconds": 0.039136408099966505,
+        "median_seconds": 0.043243540999924335,
+        "p90_seconds": 0.05157437499997286,
+        "stdev_seconds": 0.012243093825873836,
+        "min_seconds": 0.019604999999955908,
+        "max_seconds": 0.05191641700002947,
+        "fraction_percent": 0.6970707019980501
+      },
+      "vision_encoder": {
+        "mean_seconds": 3.5224150708999105,
+        "median_seconds": 3.2202671459998555,
+        "p90_seconds": 4.634085290999565,
+        "stdev_seconds": 0.8235042756100794,
+        "min_seconds": 2.1705749589998504,
+        "max_seconds": 4.98498720900011,
+        "fraction_percent": 62.73882723036132
+      },
+      "multimodal_projection": {
+        "mean_seconds": 0.11665533340008097,
+        "median_seconds": 0.09843287500007136,
+        "p90_seconds": 0.17594516499980273,
+        "stdev_seconds": 0.03604056357454809,
+        "min_seconds": 0.08689849999996113,
+        "max_seconds": 0.1831131270005244,
+        "fraction_percent": 2.0777843213741582
+      },
+      "llm_prefill": {
+        "mean_seconds": 1.5052578205999907,
+        "median_seconds": 1.4736780200000794,
+        "p90_seconds": 1.801230956999916,
+        "stdev_seconds": 0.25240620460959695,
+        "min_seconds": 1.1027762910000547,
+        "max_seconds": 1.958671584000058,
+        "fraction_percent": 26.810613866595197
+      },
+      "token_generation": {
+        "mean_seconds": 0.4309454960999801,
+        "median_seconds": 0.3674348334999422,
+        "p90_seconds": 0.5795384999998987,
+        "stdev_seconds": 0.17665542635341652,
+        "min_seconds": 0.2014452920000167,
+        "max_seconds": 0.7692282499999692,
+        "fraction_percent": 7.675703879671272
+      }
+    },
+    "stage_fraction_sum_percent": 100.0,
+    "stage_mean_sum_seconds": 5.614410129099928,
+    "mean_closure_error_seconds": 0.0
+  },
+  "images": [
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000139.jpg",
+      "image_size": [
+        640,
+        426
+      ],
+      "original_image_size": [
+        640,
+        426
+      ],
+      "input_tokens_including_visual_placeholders": 314,
+      "generated_tokens_including_special_tokens": 3,
+      "latency_seconds": 5.129546915999981,
+      "answer": "tench",
+      "stages_seconds": {
+        "image_preprocessing": 0.044011540999918,
+        "vision_encoder": 3.036836125000036,
+        "multimodal_projection": 0.09247891699988031,
+        "llm_prefill": 1.5617077080000854,
+        "token_generation": 0.39451262500006123
+      },
+      "stage_diagnostics": {
+        "visual_module_total_seconds": 3.1147472080001535,
+        "visual_module_calls": 1,
+        "merger_calls": 4,
+        "expected_merger_calls": 4,
+        "model_forward_calls": 3,
+        "model_forward_durations_seconds": [
+          4.691022750000002,
+          0.16195379100008722,
+          0.19176804099993205
+        ],
+        "first_forward_seconds": 4.691022750000002,
+        "language_model_calls": 3,
+        "language_model_durations_seconds": [
+          1.5519648330000564,
+          0.146473209000078,
+          0.18323254200004158
+        ],
+        "first_language_model_seconds": 1.5519648330000564,
+        "lm_head_calls": 3,
+        "lm_head_durations_seconds": [
+          0.009742875000029017,
+          0.014482790999863937,
+          0.00723258299990448
+        ],
+        "first_lm_head_seconds": 0.009742875000029017,
+        "merger_seconds": 0.07791108300011729,
+        "embedding_preparation_seconds": 0.014567833999763025,
+        "token_generation_model_forwards_seconds": 0.3537218320000193,
+        "generation_overhead_seconds": 0.04079079300004196,
+        "stage_sum_seconds": 5.129546915999981,
+        "closure_error_seconds": 0.0
+      },
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 6003.90625,
+        "peak_allocated_mb": 4156.78173828125,
+        "peak_driver_allocated_mb": 6003.921875,
+        "peak_increment_allocated_mb": 98.83544921875,
+        "peak_increment_driver_mb": 0.015625,
+        "after_allocated_mb": 4061.000732421875,
+        "after_driver_allocated_mb": 6003.90625,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4061.000732421875,
+        "driver_allocated_mb": 6003.90625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000285.jpg",
+      "image_size": [
+        586,
+        640
+      ],
+      "original_image_size": [
+        586,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 414,
+      "generated_tokens_including_special_tokens": 2,
+      "latency_seconds": 6.870106124999893,
+      "answer": "bear",
+      "stages_seconds": {
+        "image_preprocessing": 0.050231457999871054,
+        "vision_encoder": 4.634085290999565,
+        "multimodal_projection": 0.1831131270005244,
+        "llm_prefill": 1.801230956999916,
+        "token_generation": 0.2014452920000167
+      },
+      "stage_diagnostics": {
+        "visual_module_total_seconds": 4.760429208000005,
+        "visual_module_calls": 1,
+        "merger_calls": 4,
+        "expected_merger_calls": 4,
+        "model_forward_calls": 2,
+        "model_forward_durations_seconds": [
+          6.618429375000005,
+          0.1316071670000838
+        ],
+        "first_forward_seconds": 6.618429375000005,
+        "language_model_calls": 2,
+        "language_model_durations_seconds": [
+          1.7937676659998942,
+          0.12259929200013175
+        ],
+        "first_language_model_seconds": 1.7937676659998942,
+        "lm_head_calls": 2,
+        "lm_head_durations_seconds": [
+          0.007463291000021854,
+          0.008506208999961018
+        ],
+        "first_lm_head_seconds": 0.007463291000021854,
+        "merger_seconds": 0.12634391700044034,
+        "embedding_preparation_seconds": 0.05676921000008406,
+        "token_generation_model_forwards_seconds": 0.1316071670000838,
+        "generation_overhead_seconds": 0.06983812499993292,
+        "stage_sum_seconds": 6.870106124999893,
+        "closure_error_seconds": 0.0
+      },
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 6003.90625,
+        "peak_allocated_mb": 4381.098876953125,
+        "peak_driver_allocated_mb": 6230.046875,
+        "peak_increment_allocated_mb": 323.152587890625,
+        "peak_increment_driver_mb": 226.140625,
+        "after_allocated_mb": 4063.98876953125,
+        "after_driver_allocated_mb": 6230.046875,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4063.98876953125,
+        "driver_allocated_mb": 6230.046875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000632.jpg",
+      "image_size": [
+        640,
+        483
+      ],
+      "original_image_size": [
+        640,
+        483
+      ],
+      "input_tokens_including_visual_placeholders": 354,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 6.229337083999781,
+      "answer": "garbage truck",
+      "stages_seconds": {
+        "image_preprocessing": 0.01977891699993961,
+        "vision_encoder": 3.9167967509999926,
+        "multimodal_projection": 0.13624845799995455,
+        "llm_prefill": 1.5769744579999951,
+        "token_generation": 0.5795384999998987
+      },
+      "stage_diagnostics": {
+        "visual_module_total_seconds": 4.007740917000092,
+        "visual_module_calls": 1,
+        "merger_calls": 4,
+        "expected_merger_calls": 4,
+        "model_forward_calls": 4,
+        "model_forward_durations_seconds": [
+          5.630019666999942,
+          0.13982120900004702,
+          0.18296633400018436,
+          0.19661654199990153
+        ],
+        "first_forward_seconds": 5.630019666999942,
+        "language_model_calls": 4,
+        "language_model_durations_seconds": [
+          1.569366749999972,
+          0.13203420800005006,
+          0.17069662500011873,
+          0.18856816699985757
+        ],
+        "first_language_model_seconds": 1.569366749999972,
+        "lm_head_calls": 4,
+        "lm_head_durations_seconds": [
+          0.0076077080000231945,
+          0.007271999999829859,
+          0.011666500000046653,
+          0.007229249999909371
+        ],
+        "first_lm_head_seconds": 0.0076077080000231945,
+        "merger_seconds": 0.09094416600009936,
+        "embedding_preparation_seconds": 0.045304291999855195,
+        "token_generation_model_forwards_seconds": 0.5194040850001329,
+        "generation_overhead_seconds": 0.060134414999765795,
+        "stage_sum_seconds": 6.229337083999781,
+        "closure_error_seconds": 0.0
+      },
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 6230.046875,
+        "peak_allocated_mb": 4247.134765625,
+        "peak_driver_allocated_mb": 6230.171875,
+        "peak_increment_allocated_mb": 189.1884765625,
+        "peak_increment_driver_mb": 0.125,
+        "after_allocated_mb": 4062.033447265625,
+        "after_driver_allocated_mb": 6218.21875,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4062.033447265625,
+        "driver_allocated_mb": 6218.21875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000724.jpg",
+      "image_size": [
+        375,
+        500
+      ],
+      "original_image_size": [
+        375,
+        500
+      ],
+      "input_tokens_including_visual_placeholders": 246,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 3.9548455409999406,
+      "answer": "garbage truck",
+      "stages_seconds": {
+        "image_preprocessing": 0.03713654100010899,
+        "vision_encoder": 2.1705749589998504,
+        "multimodal_projection": 0.09899112500011142,
+        "llm_prefill": 1.1027762910000547,
+        "token_generation": 0.545366624999815
+      },
+      "stage_diagnostics": {
+        "visual_module_total_seconds": 2.2326822499999253,
+        "visual_module_calls": 1,
+        "merger_calls": 4,
+        "expected_merger_calls": 4,
+        "model_forward_calls": 4,
+        "model_forward_durations_seconds": [
+          3.3723423750000165,
+          0.11434099999996761,
+          0.1532273749999149,
+          0.1956163329998617
+        ],
+        "first_forward_seconds": 3.3723423750000165,
+        "language_model_calls": 4,
+        "language_model_durations_seconds": [
+          1.0953970000000481,
+          0.10646383299990703,
+          0.1454663750000691,
+          0.18762808299993594
+        ],
+        "first_language_model_seconds": 1.0953970000000481,
+        "lm_head_calls": 4,
+        "lm_head_durations_seconds": [
+          0.00737929100000656,
+          0.007373958000016501,
+          0.007246540999858553,
+          0.007215333999965878
+        ],
+        "first_lm_head_seconds": 0.00737929100000656,
+        "merger_seconds": 0.06210729100007484,
+        "embedding_preparation_seconds": 0.036883834000036586,
+        "token_generation_model_forwards_seconds": 0.4631847079997442,
+        "generation_overhead_seconds": 0.08218191700007083,
+        "stage_sum_seconds": 3.9548455409999406,
+        "closure_error_seconds": 0.0
+      },
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 6218.21875,
+        "peak_allocated_mb": 4245.721923828125,
+        "peak_driver_allocated_mb": 6226.375,
+        "peak_increment_allocated_mb": 187.775634765625,
+        "peak_increment_driver_mb": 8.15625,
+        "after_allocated_mb": 4061.000732421875,
+        "after_driver_allocated_mb": 6106.421875,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4061.000732421875,
+        "driver_allocated_mb": 6106.421875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000776.jpg",
+      "image_size": [
+        428,
+        640
+      ],
+      "original_image_size": [
+        428,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 314,
+      "generated_tokens_including_special_tokens": 3,
+      "latency_seconds": 5.060808499999894,
+      "answer": "tench",
+      "stages_seconds": {
+        "image_preprocessing": 0.04460358300002554,
+        "vision_encoder": 3.210144833999948,
+        "multimodal_projection": 0.11067708300038248,
+        "llm_prefill": 1.3550259579997146,
+        "token_generation": 0.3403570419998232
+      },
+      "stage_diagnostics": {
+        "visual_module_total_seconds": 3.298925041999837,
+        "visual_module_calls": 1,
+        "merger_calls": 4,
+        "expected_merger_calls": 4,
+        "model_forward_calls": 3,
+        "model_forward_durations_seconds": [
+          4.675847875000045,
+          0.12138070800006062,
+          0.18365095800004383
+        ],
+        "first_forward_seconds": 4.675847875000045,
+        "language_model_calls": 3,
+        "language_model_durations_seconds": [
+          1.3477074169998104,
+          0.11211404200003017,
+          0.1693275000000085
+        ],
+        "first_language_model_seconds": 1.3477074169998104,
+        "lm_head_calls": 3,
+        "lm_head_durations_seconds": [
+          0.007318540999904144,
+          0.008766416999833382,
+          0.013625499999989188
+        ],
+        "first_lm_head_seconds": 0.007318540999904144,
+        "merger_seconds": 0.08878020799988917,
+        "embedding_preparation_seconds": 0.02189687500049331,
+        "token_generation_model_forwards_seconds": 0.30503166600010445,
+        "generation_overhead_seconds": 0.035325375999718744,
+        "stage_sum_seconds": 5.060808499999894,
+        "closure_error_seconds": 0.0
+      },
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 6106.421875,
+        "peak_allocated_mb": 4213.451904296875,
+        "peak_driver_allocated_mb": 6174.4375,
+        "peak_increment_allocated_mb": 155.505615234375,
+        "peak_increment_driver_mb": 68.015625,
+        "after_allocated_mb": 4061.000732421875,
+        "after_driver_allocated_mb": 6174.421875,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4061.000732421875,
+        "driver_allocated_mb": 6174.421875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000785.jpg",
+      "image_size": [
+        640,
+        425
+      ],
+      "original_image_size": [
+        640,
+        425
+      ],
+      "input_tokens_including_visual_placeholders": 314,
+      "generated_tokens_including_special_tokens": 3,
+      "latency_seconds": 4.919957708000084,
+      "answer": "tench",
+      "stages_seconds": {
+        "image_preprocessing": 0.03003070799991292,
+        "vision_encoder": 3.1906816249997974,
+        "multimodal_projection": 0.09363074900034007,
+        "llm_prefill": 1.3442587919998914,
+        "token_generation": 0.26135583400014184
+      },
+      "stage_diagnostics": {
+        "visual_module_total_seconds": 3.2702572079999754,
+        "visual_module_calls": 1,
+        "merger_calls": 4,
+        "expected_merger_calls": 4,
+        "model_forward_calls": 3,
+        "model_forward_durations_seconds": [
+          4.628571166000029,
+          0.10275683300005767,
+          0.12766912500001126
+        ],
+        "first_forward_seconds": 4.628571166000029,
+        "language_model_calls": 3,
+        "language_model_durations_seconds": [
+          1.3364478749999762,
+          0.09484045799990781,
+          0.11616162499990423
+        ],
+        "first_language_model_seconds": 1.3364478749999762,
+        "lm_head_calls": 3,
+        "lm_head_durations_seconds": [
+          0.007810916999915207,
+          0.0073861670000496815,
+          0.010952833000146711
+        ],
+        "first_lm_head_seconds": 0.007810916999915207,
+        "merger_seconds": 0.07957558300017809,
+        "embedding_preparation_seconds": 0.01405516600016199,
+        "token_generation_model_forwards_seconds": 0.23042595800006893,
+        "generation_overhead_seconds": 0.03092987600007291,
+        "stage_sum_seconds": 4.919957708000084,
+        "closure_error_seconds": 0.0
+      },
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 6174.421875,
+        "peak_allocated_mb": 4151.78173828125,
+        "peak_driver_allocated_mb": 6174.4375,
+        "peak_increment_allocated_mb": 93.83544921875,
+        "peak_increment_driver_mb": 0.015625,
+        "after_allocated_mb": 4061.000732421875,
+        "after_driver_allocated_mb": 6174.421875,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4061.000732421875,
+        "driver_allocated_mb": 6174.421875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000802.jpg",
+      "image_size": [
+        424,
+        640
+      ],
+      "original_image_size": [
+        424,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 314,
+      "generated_tokens_including_special_tokens": 3,
+      "latency_seconds": 4.992027291999875,
+      "answer": "kitchen",
+      "stages_seconds": {
+        "image_preprocessing": 0.019604999999955908,
+        "vision_encoder": 3.230389457999763,
+        "multimodal_projection": 0.08689849999996113,
+        "llm_prefill": 1.3313202920001004,
+        "token_generation": 0.32381404200009456
+      },
+      "stage_diagnostics": {
+        "visual_module_total_seconds": 3.3041160830000535,
+        "visual_module_calls": 1,
+        "merger_calls": 4,
+        "expected_merger_calls": 4,
+        "model_forward_calls": 3,
+        "model_forward_durations_seconds": [
+          4.648608249999825,
+          0.1158718339997904,
+          0.1830555409999306
+        ],
+        "first_forward_seconds": 4.648608249999825,
+        "language_model_calls": 3,
+        "language_model_durations_seconds": [
+          1.3239114170000903,
+          0.10570291599992743,
+          0.17117279100011729
+        ],
+        "first_language_model_seconds": 1.3239114170000903,
+        "lm_head_calls": 3,
+        "lm_head_durations_seconds": [
+          0.0074088750000100845,
+          0.009701833000008264,
+          0.011311167000030764
+        ],
+        "first_lm_head_seconds": 0.0074088750000100845,
+        "merger_seconds": 0.07372662500029037,
+        "embedding_preparation_seconds": 0.013171874999670763,
+        "token_generation_model_forwards_seconds": 0.298927374999721,
+        "generation_overhead_seconds": 0.024886667000373563,
+        "stage_sum_seconds": 4.992027291999875,
+        "closure_error_seconds": 0.0
+      },
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 6174.421875,
+        "peak_allocated_mb": 4217.514404296875,
+        "peak_driver_allocated_mb": 6174.4375,
+        "peak_increment_allocated_mb": 159.568115234375,
+        "peak_increment_driver_mb": 0.015625,
+        "after_allocated_mb": 4061.000732421875,
+        "after_driver_allocated_mb": 6174.421875,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4061.000732421875,
+        "driver_allocated_mb": 6174.421875
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000872.jpg",
+      "image_size": [
+        621,
+        640
+      ],
+      "original_image_size": [
+        621,
+        640
+      ],
+      "input_tokens_including_visual_placeholders": 434,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 7.940748624999969,
+      "answer": "English springer",
+      "stages_seconds": {
+        "image_preprocessing": 0.05191641700002947,
+        "vision_encoder": 4.98498720900011,
+        "multimodal_projection": 0.17594516499980273,
+        "llm_prefill": 1.958671584000058,
+        "token_generation": 0.7692282499999692
+      },
+      "stage_diagnostics": {
+        "visual_module_total_seconds": 5.1110217499999635,
+        "visual_module_calls": 1,
+        "merger_calls": 4,
+        "expected_merger_calls": 4,
+        "model_forward_calls": 4,
+        "model_forward_durations_seconds": [
+          7.119603957999971,
+          0.14470987499998955,
+          0.2252843750000011,
+          0.21760641700007
+        ],
+        "first_forward_seconds": 7.119603957999971,
+        "language_model_calls": 4,
+        "language_model_durations_seconds": [
+          1.9511933750000026,
+          0.13531224999996994,
+          0.2089432919999581,
+          0.2055824169999596
+        ],
+        "first_language_model_seconds": 1.9511933750000026,
+        "lm_head_calls": 4,
+        "lm_head_durations_seconds": [
+          0.007478209000055358,
+          0.008859832999860373,
+          0.015625791000047684,
+          0.008320333000028768
+        ],
+        "first_lm_head_seconds": 0.007478209000055358,
+        "merger_seconds": 0.12603454099985356,
+        "embedding_preparation_seconds": 0.049910623999949166,
+        "token_generation_model_forwards_seconds": 0.5876006670000606,
+        "generation_overhead_seconds": 0.18162758299990855,
+        "stage_sum_seconds": 7.940748624999969,
+        "closure_error_seconds": 0.0
+      },
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 6174.421875,
+        "peak_allocated_mb": 4490.0029296875,
+        "peak_driver_allocated_mb": 6392.609375,
+        "peak_increment_allocated_mb": 432.056640625,
+        "peak_increment_driver_mb": 218.1875,
+        "after_allocated_mb": 4063.595947265625,
+        "after_driver_allocated_mb": 6392.609375,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4063.595947265625,
+        "driver_allocated_mb": 6392.609375
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000000885.jpg",
+      "image_size": [
+        640,
+        427
+      ],
+      "original_image_size": [
+        640,
+        427
+      ],
+      "input_tokens_including_visual_placeholders": 314,
+      "generated_tokens_including_special_tokens": 4,
+      "latency_seconds": 5.204124708999871,
+      "answer": "golf ball",
+      "stages_seconds": {
+        "image_preprocessing": 0.05157437499997286,
+        "vision_encoder": 3.1103239159999703,
+        "multimodal_projection": 0.09069558499982122,
+        "llm_prefill": 1.3856483320000734,
+        "token_generation": 0.5658825010000328
+      },
+      "stage_diagnostics": {
+        "visual_module_total_seconds": 3.1858585830000266,
+        "visual_module_calls": 1,
+        "merger_calls": 4,
+        "expected_merger_calls": 4,
+        "model_forward_calls": 4,
+        "model_forward_durations_seconds": [
+          4.586667832999865,
+          0.1602732079998077,
+          0.17000483299989355,
+          0.19648908400017717
+        ],
+        "first_forward_seconds": 4.586667832999865,
+        "language_model_calls": 4,
+        "language_model_durations_seconds": [
+          1.3769056660000842,
+          0.15250933300012548,
+          0.16171787499979473,
+          0.18854050000004463
+        ],
+        "first_language_model_seconds": 1.3769056660000842,
+        "lm_head_calls": 4,
+        "lm_head_durations_seconds": [
+          0.008742665999989185,
+          0.007223666000072626,
+          0.007528791999902751,
+          0.007238374999815278
+        ],
+        "first_lm_head_seconds": 0.008742665999989185,
+        "merger_seconds": 0.07553466700005629,
+        "embedding_preparation_seconds": 0.015160917999764933,
+        "token_generation_model_forwards_seconds": 0.5267671249998784,
+        "generation_overhead_seconds": 0.039115376000154356,
+        "stage_sum_seconds": 5.204124708999871,
+        "closure_error_seconds": 0.0
+      },
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 6392.609375,
+        "peak_allocated_mb": 4153.00830078125,
+        "peak_driver_allocated_mb": 6392.640625,
+        "peak_increment_allocated_mb": 95.06201171875,
+        "peak_increment_driver_mb": 0.03125,
+        "after_allocated_mb": 4061.000732421875,
+        "after_driver_allocated_mb": 6250.625,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4061.000732421875,
+        "driver_allocated_mb": 6250.625
+      },
+      "measured": true
+    },
+    {
+      "image": "/Volumes/thinkplus/MyEdgeMMEval/EdgeMMEval/profiling/pics/coco/000000001000.jpg",
+      "image_size": [
+        640,
+        480
+      ],
+      "original_image_size": [
+        640,
+        480
+      ],
+      "input_tokens_including_visual_placeholders": 354,
+      "generated_tokens_including_special_tokens": 3,
+      "latency_seconds": 5.842598791,
+      "answer": "tench",
+      "stages_seconds": {
+        "image_preprocessing": 0.04247554099993067,
+        "vision_encoder": 3.739330541000072,
+        "multimodal_projection": 0.0978746250000313,
+        "llm_prefill": 1.6349638340000183,
+        "token_generation": 0.32795424999994793
+      },
+      "stage_diagnostics": {
+        "visual_module_total_seconds": 3.813645958000052,
+        "visual_module_calls": 1,
+        "merger_calls": 4,
+        "expected_merger_calls": 4,
+        "model_forward_calls": 3,
+        "model_forward_durations_seconds": [
+          5.472169000000122,
+          0.12248475000001235,
+          0.17317395800000668
+        ],
+        "first_forward_seconds": 5.472169000000122,
+        "language_model_calls": 3,
+        "language_model_durations_seconds": [
+          1.627025834000051,
+          0.11457262499993703,
+          0.16525979199991525
+        ],
+        "first_language_model_seconds": 1.627025834000051,
+        "lm_head_calls": 3,
+        "lm_head_durations_seconds": [
+          0.00793799999996736,
+          0.007314542000131041,
+          0.0073019169999497535
+        ],
+        "first_lm_head_seconds": 0.00793799999996736,
+        "merger_seconds": 0.07431541699997979,
+        "embedding_preparation_seconds": 0.023559208000051512,
+        "token_generation_model_forwards_seconds": 0.29565870800001903,
+        "generation_overhead_seconds": 0.0322955419999289,
+        "stage_sum_seconds": 5.842598791,
+        "closure_error_seconds": 0.0
+      },
+      "memory": {
+        "sampling_interval_ms": 10.0,
+        "baseline_allocated_mb": 4057.9462890625,
+        "baseline_driver_allocated_mb": 6250.625,
+        "peak_allocated_mb": 4168.931640625,
+        "peak_driver_allocated_mb": 6338.640625,
+        "peak_increment_allocated_mb": 110.9853515625,
+        "peak_increment_driver_mb": 88.015625,
+        "after_allocated_mb": 4062.03173828125,
+        "after_driver_allocated_mb": 6338.625,
+        "recommended_max_memory_mb": 10922.671875,
+        "peak_is_sampled": true
+      },
+      "memory_after": {
+        "allocated_mb": 4062.03173828125,
+        "driver_allocated_mb": 6338.625
+      },
+      "measured": true
+    }
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "torch": "2.10.0",
+    "torchvision": "0.25.0",
+    "transformers": "5.2.0",
+    "accelerate": "1.15.0",
+    "Pillow": "12.3.0",
+    "timm": "1.0.30",
+    "num2words": "0.5.14"
+  }
+}

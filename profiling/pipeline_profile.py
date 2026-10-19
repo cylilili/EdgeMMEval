@@ -636,6 +636,14 @@ def main():
             flush=True,
         )
 
+    stage_names = (
+        "image_preprocessing",
+        "vision_encoder",
+        "multimodal_projection",
+        "llm_prefill",
+        "token_generation",
+    )
+
     latencies = [x["latency_seconds"] for x in per_image]
     summary = {
         "count": len(latencies),
@@ -667,6 +675,68 @@ def main():
             }
     if memory_summary:
         summary["memory"] = memory_summary
+
+    total_latency_sum = sum(latencies)
+    stage_summary = {}
+
+    for stage_name in stage_names:
+        values = [
+            item["stages_seconds"][stage_name]
+            for item in per_image
+        ]
+
+        stage_summary[stage_name] = {
+            "mean_seconds": statistics.mean(values),
+            "median_seconds": statistics.median(values),
+            "p90_seconds": sorted(values)[
+                math.ceil(0.9 * len(values)) - 1
+            ],
+            "stdev_seconds": (
+                statistics.stdev(values)
+                if len(values) > 1
+                else 0.0
+            ),
+            "min_seconds": min(values),
+            "max_seconds": max(values),
+            "fraction_percent": (
+                100.0 * sum(values) / total_latency_sum
+            ),
+        }
+
+    summary["stages"] = stage_summary
+
+    fraction_sum = sum(
+        stage_summary[stage_name]["fraction_percent"]
+        for stage_name in stage_names
+    )
+
+    if abs(fraction_sum - 100.0) > 1e-6:
+        raise RuntimeError(
+            f"Stage fractions do not sum to 100%: "
+            f"{fraction_sum:.9f}%"
+        )
+
+    summary["stage_fraction_sum_percent"] = fraction_sum
+
+    stage_mean_sum = sum(
+        stage_summary[stage_name]["mean_seconds"]
+        for stage_name in stage_names
+    )
+
+    mean_closure_error_s = (
+        summary["mean_seconds"]
+        - stage_mean_sum
+    )
+
+    if abs(mean_closure_error_s) > 1e-6:
+        raise RuntimeError(
+            f"Mean stage closure error is too large: "
+            f"{mean_closure_error_s:.9f}s"
+        )
+
+    summary["stage_mean_sum_seconds"] = stage_mean_sum
+    summary["mean_closure_error_seconds"] = mean_closure_error_s
+
     record = {
         "purpose": "multi-image baseline; warm-up excluded from measured statistics",
         "model": args.model_id, "task": args.task, "device": device,
