@@ -120,6 +120,7 @@ def main():
             self.started_at = None
             self.elapsed_seconds = 0.0
             self.call_count = 0
+            self.durations_seconds = []
 
         def before_forward(self, module, args):
             synchronize()
@@ -131,7 +132,9 @@ def main():
             if self.started_at is None:
                 raise RuntimeError("ModuleTimer ended without starting")
 
-            self.elapsed_seconds += time.perf_counter() - self.started_at
+            duration = time.perf_counter() - self.started_at
+            self.elapsed_seconds += duration
+            self.durations_seconds.append(duration)
             self.call_count += 1
             self.started_at = None
 
@@ -192,6 +195,43 @@ def main():
         ])
 
     expected_merger_calls = len(merger_modules)
+
+
+    model_forward_timer = ModuleTimer()
+
+    model_forward_pre_hook = model.register_forward_pre_hook(
+        model_forward_timer.before_forward
+    )
+
+    model_forward_post_hook = model.register_forward_hook(
+        model_forward_timer.after_forward
+    )
+
+
+    language_model_timer = ModuleTimer()
+
+    language_model_pre_hook = (
+        model.model.language_model.register_forward_pre_hook(
+            language_model_timer.before_forward
+        )
+    )
+
+    language_model_post_hook = (
+        model.model.language_model.register_forward_hook(
+            language_model_timer.after_forward
+        )
+    )
+
+
+    lm_head_timer = ModuleTimer()
+
+    lm_head_pre_hook = model.lm_head.register_forward_pre_hook(
+        lm_head_timer.before_forward
+    )
+
+    lm_head_post_hook = model.lm_head.register_forward_hook(
+        lm_head_timer.after_forward
+    )
 
 
     synchronize()
@@ -335,6 +375,9 @@ def main():
 
             visual_timer.reset()
             merger_timer.reset()
+            model_forward_timer.reset()
+            language_model_timer.reset()
+            lm_head_timer.reset()
 
             input_tokens = inputs["input_ids"].shape[-1]
             with torch.inference_mode():
@@ -345,6 +388,17 @@ def main():
 
             merger_s = merger_timer.elapsed_seconds
             merger_calls = merger_timer.call_count
+
+            model_forward_calls = model_forward_timer.call_count
+            model_forward_durations = model_forward_timer.durations_seconds
+
+            language_model_calls = language_model_timer.call_count
+            language_model_durations = (
+                language_model_timer.durations_seconds
+            )
+
+            lm_head_calls = lm_head_timer.call_count
+            lm_head_durations = lm_head_timer.durations_seconds
 
             if visual_module_calls != 1:
                 raise RuntimeError(
@@ -369,6 +423,72 @@ def main():
 
             vision_encoder_s = visual_module_s - merger_s
 
+            if model_forward_calls < 1:
+                raise RuntimeError("Expected at least one model forward call")
+
+            if len(model_forward_durations) != model_forward_calls:
+                raise RuntimeError(
+                    "Model forward duration count does not match call count"
+                )
+
+            first_forward_s = model_forward_durations[0]
+
+            if first_forward_s <= 0:
+                raise RuntimeError("First model forward latency must be positive")
+
+            if language_model_calls != model_forward_calls:
+                raise RuntimeError(
+                    f"Language model calls ({language_model_calls}) "
+                    f"do not match model forward calls "
+                    f"({model_forward_calls})"
+                )
+
+            if len(language_model_durations) != language_model_calls:
+                raise RuntimeError(
+                    "Language model duration count does not match call count"
+                )
+
+            first_language_model_s = language_model_durations[0]
+
+            if first_language_model_s <= 0:
+                raise RuntimeError(
+                    "First language model latency must be positive"
+                )
+
+            if first_language_model_s >= first_forward_s:
+                raise RuntimeError(
+                    "Language model latency must be smaller than "
+                    "the complete first forward latency"
+                )
+
+            if lm_head_calls != model_forward_calls:
+                raise RuntimeError(
+                    f"LM head calls ({lm_head_calls}) do not match "
+                    f"model forward calls ({model_forward_calls})"
+                )
+
+            if len(lm_head_durations) != lm_head_calls:
+                raise RuntimeError(
+                    "LM head duration count does not match call count"
+                )
+
+            first_lm_head_s = lm_head_durations[0]
+
+            if first_lm_head_s <= 0:
+                raise RuntimeError(
+                    "First LM head latency must be positive"
+                )
+
+            llm_prefill_s = (
+                first_language_model_s
+                + first_lm_head_s
+            )
+
+            if llm_prefill_s >= first_forward_s:
+              raise RuntimeError(
+                  "LLM prefill must be smaller than "
+                  "the complete first forward"
+              )
 
             generated = output[0, input_tokens:]
             answer = processor.decode(generated, skip_special_tokens=True).strip()
@@ -400,12 +520,22 @@ def main():
                 "image_preprocessing": preprocessing_s,
                 "vision_encoder": vision_encoder_s,
                 "multimodal_projection_mergers": merger_s,
+                "llm_prefill": llm_prefill_s,
             },
             "stage_diagnostics": {
                 "visual_module_total_seconds": visual_module_s,
                 "visual_module_calls": visual_module_calls,
                 "merger_calls": merger_calls,
                 "expected_merger_calls": expected_merger_calls,
+                "model_forward_calls": model_forward_calls,
+                "model_forward_durations_seconds": model_forward_durations,
+                "first_forward_seconds": first_forward_s,
+                "language_model_calls": language_model_calls,
+                "language_model_durations_seconds": language_model_durations,
+                "first_language_model_seconds": first_language_model_s,
+                "lm_head_calls": lm_head_calls,
+                "lm_head_durations_seconds": lm_head_durations,
+                "first_lm_head_seconds": first_lm_head_s,
             },
             **empty_answer_diagnostics,
             "memory": memory, "memory_after": memory_after,
