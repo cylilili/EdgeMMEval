@@ -1,7 +1,4 @@
-"""Measure single-image inference with a Qwen, Gemma, or SmolVLM2 model.
-
-This records request-level latency and memory, not stage-level timing.
-"""
+"""Profile five-stage latency and memory for Qwen3-VL image inference."""
 import argparse
 import importlib.metadata
 import json
@@ -20,19 +17,24 @@ LABELS = (
     "tench, English springer, cassette player, chain saw, church, "
     "French horn, garbage truck, gas pump, golf ball, parachute"
 )
+STAGE_NAMES = (
+    "image_preprocessing",
+    "vision_encoder",
+    "multimodal_projection",
+    "llm_prefill",
+    "token_generation",
+)
+MEMORY_FIELDS = (
+    "peak_allocated_mb",
+    "peak_driver_allocated_mb",
+    "peak_reserved_mb",
+    "peak_increment_allocated_mb",
+    "peak_increment_driver_mb",
+    "peak_increment_reserved_mb",
+)
 
 
-def versions():
-    result = {"python": platform.python_version()}
-    for name in ("torch", "torchvision", "transformers", "accelerate", "Pillow", "timm", "num2words"):
-        try:
-            result[name] = importlib.metadata.version(name)
-        except importlib.metadata.PackageNotFoundError:
-            result[name] = "not installed"
-    return result
-
-
-def main():
+def build_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check-env", action="store_true")
     parser.add_argument("--image", type=Path, action="append",
@@ -57,33 +59,371 @@ def main():
     parser.add_argument("--memory-sample-interval-ms", type=float, default=10.0,
                         help="MPS memory sampling interval in milliseconds (default: 10)")
     parser.add_argument("--output", type=Path)
-    args = parser.parse_args()
-    environment = versions()
-    if args.check_env:
-        print(json.dumps(environment, indent=2))
-        return
+    return parser
+
+
+def collect_image_paths(args, parser):
     image_paths = list(args.image or [])
     if args.image_dir:
         if not args.image_dir.is_dir():
             parser.error(f"Image directory does not exist: {args.image_dir}")
         image_paths.extend(sorted(
-            p for p in args.image_dir.iterdir()
-            if p.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}
+            path for path in args.image_dir.iterdir()
+            if path.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp"}
         ))
     if not image_paths:
         parser.error("Provide --image PATH (repeatable) or --image-dir PATH")
-    missing = [str(p) for p in image_paths if not p.is_file()]
+    missing = [str(path) for path in image_paths if not path.is_file()]
     if missing:
         parser.error(f"Image does not exist: {missing[0]}")
     if args.max_images < 1:
         parser.error("--max-images must be positive")
-    image_paths = image_paths[:args.max_images]
     if args.max_new_tokens < 1:
         parser.error("--max-new-tokens must be positive")
     if args.max_image_side < 0:
         parser.error("--max-image-side must be nonnegative")
     if args.memory_sample_interval_ms <= 0:
         parser.error("--memory-sample-interval-ms must be positive")
+    return image_paths[:args.max_images]
+
+
+def prompt_for_task(task):
+    if task == "classification":
+        return (
+            f"Classify this image into exactly one of: {LABELS}. "
+            "Return only the category name."
+        )
+    return (
+        "Describe the visible objects and their spatial relationships in this image "
+        "in two or three sentences. Do not speculate about things that are not visible."
+    )
+
+
+def versions():
+    result = {"python": platform.python_version()}
+    for name in ("torch", "torchvision", "transformers", "accelerate", "Pillow", "timm", "num2words"):
+        try:
+            result[name] = importlib.metadata.version(name)
+        except importlib.metadata.PackageNotFoundError:
+            result[name] = "not installed"
+    return result
+
+
+def summarize_measurements(per_image):
+    """Aggregate request, memory, and stage statistics."""
+
+    latencies = [item["latency_seconds"] for item in per_image]
+
+    def describe(values):
+        return {
+            "mean_seconds": statistics.mean(values),
+            "median_seconds": statistics.median(values),
+            "p90_seconds": sorted(values)[math.ceil(0.9 * len(values)) - 1],
+            "stdev_seconds": (
+                statistics.stdev(values) if len(values) > 1 else 0.0
+            ),
+            "min_seconds": min(values),
+            "max_seconds": max(values),
+        }
+
+    summary = {"count": len(latencies), **describe(latencies)}
+    memory_summary = {}
+    for field in MEMORY_FIELDS:
+        values = [
+            item["memory"][field]
+            for item in per_image
+            if field in item["memory"]
+        ]
+        if values:
+            memory_summary[field] = {
+                "mean_mb": statistics.mean(values),
+                "max_mb": max(values),
+            }
+    if memory_summary:
+        summary["memory"] = memory_summary
+
+    total_latency_sum = sum(latencies)
+    stage_summary = {}
+    for stage_name in STAGE_NAMES:
+        values = [
+            item["stages_seconds"][stage_name]
+            for item in per_image
+        ]
+        stage_summary[stage_name] = {
+            **describe(values),
+            "fraction_percent": 100.0 * sum(values) / total_latency_sum,
+        }
+    summary["stages"] = stage_summary
+
+    fraction_sum = sum(
+        stage_summary[stage_name]["fraction_percent"]
+        for stage_name in STAGE_NAMES
+    )
+    if abs(fraction_sum - 100.0) > 1e-6:
+        raise RuntimeError(
+            f"Stage fractions do not sum to 100%: {fraction_sum:.9f}%"
+        )
+    stage_mean_sum = sum(
+        stage_summary[stage_name]["mean_seconds"]
+        for stage_name in STAGE_NAMES
+    )
+    mean_closure_error_s = summary["mean_seconds"] - stage_mean_sum
+    if abs(mean_closure_error_s) > 1e-6:
+        raise RuntimeError(
+            f"Mean stage closure error is too large: "
+            f"{mean_closure_error_s:.9f}s"
+        )
+
+    summary["stage_fraction_sum_percent"] = fraction_sum
+    summary["stage_mean_sum_seconds"] = stage_mean_sum
+    summary["mean_closure_error_seconds"] = mean_closure_error_s
+    return summary
+
+
+class ModuleTimer:
+    """Record synchronized durations for every hooked forward call."""
+
+    def __init__(self, synchronize):
+        self.synchronize = synchronize
+        self.reset()
+
+    def reset(self):
+        self.started_at = None
+        self.elapsed_seconds = 0.0
+        self.call_count = 0
+        self.durations_seconds = []
+
+    def before_forward(self, module, args):
+        self.synchronize()
+        self.started_at = time.perf_counter()
+
+    def after_forward(self, module, args, output):
+        self.synchronize()
+        if self.started_at is None:
+            raise RuntimeError("ModuleTimer ended without starting")
+        duration = time.perf_counter() - self.started_at
+        self.elapsed_seconds += duration
+        self.durations_seconds.append(duration)
+        self.call_count += 1
+        self.started_at = None
+
+
+def calculate_preprocessing_stage(started_at, synchronize):
+    """Finish pending device work and return image/prompt preparation time."""
+
+    synchronize()
+    preprocessing_s = time.perf_counter() - started_at
+    if preprocessing_s <= 0:
+        raise RuntimeError("Image preprocessing latency must be positive")
+    return preprocessing_s
+
+
+def calculate_vision_encoder_stage(visual_timer, merger_timer, expected_calls):
+    """Separate vision-encoder time from the visual module's merger calls."""
+
+    if visual_timer.call_count != 1:
+        raise RuntimeError(
+            f"Expected one visual forward call, got {visual_timer.call_count}"
+        )
+    if visual_timer.elapsed_seconds <= 0:
+        raise RuntimeError("Visual module latency must be positive")
+    if merger_timer.call_count != expected_calls:
+        raise RuntimeError(
+            f"Expected {expected_calls} merger calls, "
+            f"got {merger_timer.call_count}"
+        )
+    if merger_timer.elapsed_seconds <= 0:
+        raise RuntimeError("Merger latency must be positive")
+    if merger_timer.elapsed_seconds >= visual_timer.elapsed_seconds:
+        raise RuntimeError(
+            "Merger latency must be smaller than total visual latency"
+        )
+    return visual_timer.elapsed_seconds - merger_timer.elapsed_seconds
+
+
+def calculate_llm_prefill_stage(
+    model_forward_timer,
+    language_model_timer,
+    lm_head_timer,
+):
+    """Return first-forward and LLM-prefill time after validating hook calls."""
+
+    model_calls = model_forward_timer.call_count
+    model_durations = model_forward_timer.durations_seconds
+    if model_calls < 1:
+        raise RuntimeError("Expected at least one model forward call")
+    if len(model_durations) != model_calls:
+        raise RuntimeError("Model forward duration count does not match call count")
+
+    language_calls = language_model_timer.call_count
+    language_durations = language_model_timer.durations_seconds
+    if language_calls != model_calls:
+        raise RuntimeError(
+            f"Language model calls ({language_calls}) do not match "
+            f"model forward calls ({model_calls})"
+        )
+    if len(language_durations) != language_calls:
+        raise RuntimeError(
+            "Language model duration count does not match call count"
+        )
+
+    lm_head_calls = lm_head_timer.call_count
+    lm_head_durations = lm_head_timer.durations_seconds
+    if lm_head_calls != model_calls:
+        raise RuntimeError(
+            f"LM head calls ({lm_head_calls}) do not match "
+            f"model forward calls ({model_calls})"
+        )
+    if len(lm_head_durations) != lm_head_calls:
+        raise RuntimeError("LM head duration count does not match call count")
+
+    first_forward_s = model_durations[0]
+    first_language_model_s = language_durations[0]
+    first_lm_head_s = lm_head_durations[0]
+    if first_forward_s <= 0:
+        raise RuntimeError("First model forward latency must be positive")
+    if first_language_model_s <= 0:
+        raise RuntimeError("First language model latency must be positive")
+    if first_lm_head_s <= 0:
+        raise RuntimeError("First LM head latency must be positive")
+    if first_language_model_s >= first_forward_s:
+        raise RuntimeError(
+            "Language model latency must be smaller than "
+            "the complete first forward latency"
+        )
+
+    llm_prefill_s = first_language_model_s + first_lm_head_s
+    if llm_prefill_s >= first_forward_s:
+        raise RuntimeError(
+            "LLM prefill must be smaller than the complete first forward"
+        )
+    return first_forward_s, llm_prefill_s
+
+
+def calculate_multimodal_projection_stage(
+    first_forward_s,
+    vision_encoder_s,
+    llm_prefill_s,
+    merger_s,
+):
+    """Derive projection and embedding-preparation time from first forward."""
+
+    projection_s = first_forward_s - vision_encoder_s - llm_prefill_s
+    if projection_s <= 0:
+        raise RuntimeError("Multimodal projection latency must be positive")
+    if projection_s < merger_s:
+        raise RuntimeError(
+            "Multimodal projection latency cannot be smaller than merger latency"
+        )
+    return projection_s, projection_s - merger_s
+
+
+def calculate_token_generation_stage(
+    elapsed_s,
+    preprocessing_s,
+    first_forward_s,
+    model_forward_durations,
+):
+    """Derive decode-loop time and its non-model generation overhead."""
+
+    token_generation_s = elapsed_s - preprocessing_s - first_forward_s
+    if token_generation_s <= 0:
+        raise RuntimeError("Token generation latency must be positive")
+    decode_forwards_s = sum(model_forward_durations[1:])
+    generation_overhead_s = token_generation_s - decode_forwards_s
+    if generation_overhead_s < -1e-6:
+        raise RuntimeError("Generation overhead cannot be negative")
+    return token_generation_s, decode_forwards_s, generation_overhead_s
+
+
+def decompose_stage_timings(
+    preprocessing_s,
+    elapsed_s,
+    visual_timer,
+    merger_timer,
+    expected_merger_calls,
+    model_forward_timer,
+    language_model_timer,
+    lm_head_timer,
+):
+    """Calculate all stages and return the existing diagnostic JSON fields."""
+
+    vision_encoder_s = calculate_vision_encoder_stage(
+        visual_timer,
+        merger_timer,
+        expected_merger_calls,
+    )
+    first_forward_s, llm_prefill_s = calculate_llm_prefill_stage(
+        model_forward_timer,
+        language_model_timer,
+        lm_head_timer,
+    )
+    projection_s, embedding_preparation_s = (
+        calculate_multimodal_projection_stage(
+            first_forward_s,
+            vision_encoder_s,
+            llm_prefill_s,
+            merger_timer.elapsed_seconds,
+        )
+    )
+    token_generation_s, decode_forwards_s, generation_overhead_s = (
+        calculate_token_generation_stage(
+            elapsed_s,
+            preprocessing_s,
+            first_forward_s,
+            model_forward_timer.durations_seconds,
+        )
+    )
+
+    stages = {
+        "image_preprocessing": preprocessing_s,
+        "vision_encoder": vision_encoder_s,
+        "multimodal_projection": projection_s,
+        "llm_prefill": llm_prefill_s,
+        "token_generation": token_generation_s,
+    }
+    stage_sum_s = sum(stages.values())
+    closure_error_s = elapsed_s - stage_sum_s
+    if abs(closure_error_s) > 1e-6:
+        raise RuntimeError(
+            f"Stage latency closure error is too large: {closure_error_s:.9f}s"
+        )
+
+    model_durations = model_forward_timer.durations_seconds
+    language_durations = language_model_timer.durations_seconds
+    lm_head_durations = lm_head_timer.durations_seconds
+    diagnostics = {
+        "visual_module_total_seconds": visual_timer.elapsed_seconds,
+        "visual_module_calls": visual_timer.call_count,
+        "merger_calls": merger_timer.call_count,
+        "expected_merger_calls": expected_merger_calls,
+        "model_forward_calls": model_forward_timer.call_count,
+        "model_forward_durations_seconds": model_durations,
+        "first_forward_seconds": first_forward_s,
+        "language_model_calls": language_model_timer.call_count,
+        "language_model_durations_seconds": language_durations,
+        "first_language_model_seconds": language_durations[0],
+        "lm_head_calls": lm_head_timer.call_count,
+        "lm_head_durations_seconds": lm_head_durations,
+        "first_lm_head_seconds": lm_head_durations[0],
+        "merger_seconds": merger_timer.elapsed_seconds,
+        "embedding_preparation_seconds": embedding_preparation_s,
+        "token_generation_model_forwards_seconds": decode_forwards_s,
+        "generation_overhead_seconds": generation_overhead_s,
+        "stage_sum_seconds": stage_sum_s,
+        "closure_error_seconds": closure_error_s,
+    }
+    return stages, diagnostics
+
+
+def main():
+    parser = build_parser()
+    args = parser.parse_args()
+    environment = versions()
+    if args.check_env:
+        print(json.dumps(environment, indent=2))
+        return
+    image_paths = collect_image_paths(args, parser)
 
     import torch
     from PIL import Image
@@ -112,32 +452,7 @@ def main():
         elif device == "mps":
             torch.mps.synchronize()
 
-    class ModuleTimer:
-        def __init__(self):
-            self.reset()
-
-        def reset(self):
-            self.started_at = None
-            self.elapsed_seconds = 0.0
-            self.call_count = 0
-            self.durations_seconds = []
-
-        def before_forward(self, module, args):
-            synchronize()
-            self.started_at = time.perf_counter()
-
-        def after_forward(self, module, args, output):
-            synchronize()
-
-            if self.started_at is None:
-                raise RuntimeError("ModuleTimer ended without starting")
-
-            duration = time.perf_counter() - self.started_at
-            self.elapsed_seconds += duration
-            self.durations_seconds.append(duration)
-            self.call_count += 1
-            self.started_at = None
-
+    # Model loading and hook setup
     print(f"Loading {args.model_id} on {device} ({dtype}). First use downloads weights.", flush=True)
     start = time.perf_counter()
     processor = AutoProcessor.from_pretrained(args.model_id, local_files_only=args.local_files_only)
@@ -164,7 +479,7 @@ def main():
             "Qwen/Qwen3-VL-2B-Instruct"
         )
 
-    visual_timer = ModuleTimer()
+    visual_timer = ModuleTimer(synchronize)
 
     visual_pre_hook = model.model.visual.register_forward_pre_hook(
         visual_timer.before_forward
@@ -175,7 +490,7 @@ def main():
     )
 
 
-    merger_timer = ModuleTimer()
+    merger_timer = ModuleTimer(synchronize)
 
     merger_modules = [
         model.model.visual.merger,
@@ -197,7 +512,7 @@ def main():
     expected_merger_calls = len(merger_modules)
 
 
-    model_forward_timer = ModuleTimer()
+    model_forward_timer = ModuleTimer(synchronize)
 
     model_forward_pre_hook = model.register_forward_pre_hook(
         model_forward_timer.before_forward
@@ -208,7 +523,7 @@ def main():
     )
 
 
-    language_model_timer = ModuleTimer()
+    language_model_timer = ModuleTimer(synchronize)
 
     language_model_pre_hook = (
         model.model.language_model.register_forward_pre_hook(
@@ -223,7 +538,7 @@ def main():
     )
 
 
-    lm_head_timer = ModuleTimer()
+    lm_head_timer = ModuleTimer(synchronize)
 
     lm_head_pre_hook = model.lm_head.register_forward_pre_hook(
         lm_head_timer.before_forward
@@ -238,13 +553,9 @@ def main():
     load_s = time.perf_counter() - start
     print(f"Model loaded in {load_s:.1f}s. Preparing image...", flush=True)
 
-    prompt = (
-        f"Classify this image into exactly one of: {LABELS}. "
-        "Return only the category name."
-        if args.task == "classification" else
-        "Describe the visible objects and their spatial relationships in this image "
-        "in two or three sentences. Do not speculate about things that are not visible."
-    )
+    prompt = prompt_for_task(args.task)
+
+    # Per-request memory tracking
     class MPSMemorySampler:
         """Estimate per-request MPS peak memory by periodic sampling."""
 
@@ -346,6 +657,7 @@ def main():
             }
         return {}
 
+    # Single-image preprocessing, generation, and stage decomposition
     def run_one(path: Path, measured: bool):
         synchronize()
         memory_tracker = start_memory_tracking()
@@ -370,8 +682,10 @@ def main():
             if "pixel_values" in inputs:
                 inputs["pixel_values"] = inputs["pixel_values"].to(dtype=dtype)
 
-            synchronize()
-            preprocessing_s = time.perf_counter() - preprocessing_start
+            preprocessing_s = calculate_preprocessing_stage(
+                preprocessing_start,
+                synchronize,
+            )
 
             visual_timer.reset()
             merger_timer.reset()
@@ -383,135 +697,6 @@ def main():
             with torch.inference_mode():
                 output = model.generate(**inputs, max_new_tokens=args.max_new_tokens, do_sample=False)
 
-            visual_module_s = visual_timer.elapsed_seconds
-            visual_module_calls = visual_timer.call_count
-
-            merger_s = merger_timer.elapsed_seconds
-            merger_calls = merger_timer.call_count
-
-            model_forward_calls = model_forward_timer.call_count
-            model_forward_durations = model_forward_timer.durations_seconds
-
-            language_model_calls = language_model_timer.call_count
-            language_model_durations = (
-                language_model_timer.durations_seconds
-            )
-
-            lm_head_calls = lm_head_timer.call_count
-            lm_head_durations = lm_head_timer.durations_seconds
-
-            if visual_module_calls != 1:
-                raise RuntimeError(
-                    f"Expected one visual forward call, got {visual_module_calls}"
-                )
-            if visual_module_s <= 0:
-                raise RuntimeError("Visual module latency must be positive")
-
-            if merger_calls != expected_merger_calls:
-                raise RuntimeError(
-                    f"Expected {expected_merger_calls} merger calls, "
-                    f"got {merger_calls}"
-                )
-
-            if merger_s <= 0:
-                raise RuntimeError("Merger latency must be positive")
-
-            if merger_s >= visual_module_s:
-                raise RuntimeError(
-                    "Merger latency must be smaller than total visual latency"
-                )
-
-            vision_encoder_s = visual_module_s - merger_s
-
-            if model_forward_calls < 1:
-                raise RuntimeError("Expected at least one model forward call")
-
-            if len(model_forward_durations) != model_forward_calls:
-                raise RuntimeError(
-                    "Model forward duration count does not match call count"
-                )
-
-            first_forward_s = model_forward_durations[0]
-
-            if first_forward_s <= 0:
-                raise RuntimeError("First model forward latency must be positive")
-
-            if language_model_calls != model_forward_calls:
-                raise RuntimeError(
-                    f"Language model calls ({language_model_calls}) "
-                    f"do not match model forward calls "
-                    f"({model_forward_calls})"
-                )
-
-            if len(language_model_durations) != language_model_calls:
-                raise RuntimeError(
-                    "Language model duration count does not match call count"
-                )
-
-            first_language_model_s = language_model_durations[0]
-
-            if first_language_model_s <= 0:
-                raise RuntimeError(
-                    "First language model latency must be positive"
-                )
-
-            if first_language_model_s >= first_forward_s:
-                raise RuntimeError(
-                    "Language model latency must be smaller than "
-                    "the complete first forward latency"
-                )
-
-            if lm_head_calls != model_forward_calls:
-                raise RuntimeError(
-                    f"LM head calls ({lm_head_calls}) do not match "
-                    f"model forward calls ({model_forward_calls})"
-                )
-
-            if len(lm_head_durations) != lm_head_calls:
-                raise RuntimeError(
-                    "LM head duration count does not match call count"
-                )
-
-            first_lm_head_s = lm_head_durations[0]
-
-            if first_lm_head_s <= 0:
-                raise RuntimeError(
-                    "First LM head latency must be positive"
-                )
-
-            llm_prefill_s = (
-                first_language_model_s
-                + first_lm_head_s
-            )
-
-            if llm_prefill_s >= first_forward_s:
-              raise RuntimeError(
-                  "LLM prefill must be smaller than "
-                  "the complete first forward"
-              )
-
-            multimodal_projection_s = (
-                first_forward_s
-                - vision_encoder_s
-                - llm_prefill_s
-            )
-
-            if multimodal_projection_s <= 0:
-                raise RuntimeError(
-                    "Multimodal projection latency must be positive"
-                )
-
-            if multimodal_projection_s < merger_s:
-                raise RuntimeError(
-                    "Multimodal projection latency cannot be smaller "
-                    "than merger latency"
-                )
-
-            embedding_preparation_s = (
-                multimodal_projection_s
-                - merger_s
-            )
-            
             generated = output[0, input_tokens:]
             answer = processor.decode(generated, skip_special_tokens=True).strip()
             empty_answer_diagnostics = {}
@@ -524,48 +709,16 @@ def main():
 
             synchronize()
             elapsed_s = time.perf_counter() - total_start
-
-            token_generation_s = (
-                elapsed_s
-                - preprocessing_s
-                - first_forward_s
+            stages_seconds, stage_diagnostics = decompose_stage_timings(
+                preprocessing_s,
+                elapsed_s,
+                visual_timer,
+                merger_timer,
+                expected_merger_calls,
+                model_forward_timer,
+                language_model_timer,
+                lm_head_timer,
             )
-
-            if token_generation_s <= 0:
-                raise RuntimeError(
-                    "Token generation latency must be positive"
-                )
-
-            decode_model_forwards_s = sum(
-                model_forward_durations[1:]
-            )
-
-            generation_overhead_s = (
-                token_generation_s
-                - decode_model_forwards_s
-            )
-
-            if generation_overhead_s < -1e-6:
-                raise RuntimeError(
-                    "Generation overhead cannot be negative"
-                )
-
-            stage_sum_s = (
-                preprocessing_s
-                + vision_encoder_s
-                + multimodal_projection_s
-                + llm_prefill_s
-                + token_generation_s
-            )
-
-            closure_error_s = elapsed_s - stage_sum_s
-
-            if abs(closure_error_s) > 1e-6:
-                raise RuntimeError(
-                    f"Stage latency closure error is too large: "
-                    f"{closure_error_s:.9f}s"
-                )
-
 
         finally:
             memory = stop_memory_tracking(memory_tracker)
@@ -581,40 +734,14 @@ def main():
             "generated_tokens_including_special_tokens": generated.numel(),
             "latency_seconds": elapsed_s,
             "answer": answer,
-            "stages_seconds": {
-                "image_preprocessing": preprocessing_s,
-                "vision_encoder": vision_encoder_s,
-                "multimodal_projection": multimodal_projection_s,
-                "llm_prefill": llm_prefill_s,
-                "token_generation": token_generation_s,
-            },
-            "stage_diagnostics": {
-                "visual_module_total_seconds": visual_module_s,
-                "visual_module_calls": visual_module_calls,
-                "merger_calls": merger_calls,
-                "expected_merger_calls": expected_merger_calls,
-                "model_forward_calls": model_forward_calls,
-                "model_forward_durations_seconds": model_forward_durations,
-                "first_forward_seconds": first_forward_s,
-                "language_model_calls": language_model_calls,
-                "language_model_durations_seconds": language_model_durations,
-                "first_language_model_seconds": first_language_model_s,
-                "lm_head_calls": lm_head_calls,
-                "lm_head_durations_seconds": lm_head_durations,
-                "first_lm_head_seconds": first_lm_head_s,
-                "merger_seconds": merger_s,
-                "embedding_preparation_seconds": embedding_preparation_s,
-                "token_generation_model_forwards_seconds": decode_model_forwards_s,
-                "generation_overhead_seconds": generation_overhead_s,
-                "stage_sum_seconds": stage_sum_s,
-                "closure_error_seconds": closure_error_s,
-
-            },
+            "stages_seconds": stages_seconds,
+            "stage_diagnostics": stage_diagnostics,
             **empty_answer_diagnostics,
             "memory": memory, "memory_after": memory_after,
             "measured": measured,
         }
 
+    # Warm-up, measured runs, and output
     if not args.no_warmup:
         print(f"Warm-up: {image_paths[0]}", flush=True)
         run_one(image_paths[0], measured=False)
@@ -636,106 +763,7 @@ def main():
             flush=True,
         )
 
-    stage_names = (
-        "image_preprocessing",
-        "vision_encoder",
-        "multimodal_projection",
-        "llm_prefill",
-        "token_generation",
-    )
-
-    latencies = [x["latency_seconds"] for x in per_image]
-    summary = {
-        "count": len(latencies),
-        "mean_seconds": statistics.mean(latencies),
-        "median_seconds": statistics.median(latencies),
-        "p90_seconds": sorted(latencies)[math.ceil(0.9 * len(latencies)) - 1],
-        "stdev_seconds": statistics.stdev(latencies) if len(latencies) > 1 else 0.0,
-        "min_seconds": min(latencies), "max_seconds": max(latencies),
-    }
-    memory_fields = (
-        "peak_allocated_mb",
-        "peak_driver_allocated_mb",
-        "peak_reserved_mb",
-        "peak_increment_allocated_mb",
-        "peak_increment_driver_mb",
-        "peak_increment_reserved_mb",
-    )
-    memory_summary = {}
-    for field in memory_fields:
-        values = [
-            item["memory"][field]
-            for item in per_image
-            if field in item["memory"]
-        ]
-        if values:
-            memory_summary[field] = {
-                "mean_mb": statistics.mean(values),
-                "max_mb": max(values),
-            }
-    if memory_summary:
-        summary["memory"] = memory_summary
-
-    total_latency_sum = sum(latencies)
-    stage_summary = {}
-
-    for stage_name in stage_names:
-        values = [
-            item["stages_seconds"][stage_name]
-            for item in per_image
-        ]
-
-        stage_summary[stage_name] = {
-            "mean_seconds": statistics.mean(values),
-            "median_seconds": statistics.median(values),
-            "p90_seconds": sorted(values)[
-                math.ceil(0.9 * len(values)) - 1
-            ],
-            "stdev_seconds": (
-                statistics.stdev(values)
-                if len(values) > 1
-                else 0.0
-            ),
-            "min_seconds": min(values),
-            "max_seconds": max(values),
-            "fraction_percent": (
-                100.0 * sum(values) / total_latency_sum
-            ),
-        }
-
-    summary["stages"] = stage_summary
-
-    fraction_sum = sum(
-        stage_summary[stage_name]["fraction_percent"]
-        for stage_name in stage_names
-    )
-
-    if abs(fraction_sum - 100.0) > 1e-6:
-        raise RuntimeError(
-            f"Stage fractions do not sum to 100%: "
-            f"{fraction_sum:.9f}%"
-        )
-
-    summary["stage_fraction_sum_percent"] = fraction_sum
-
-    stage_mean_sum = sum(
-        stage_summary[stage_name]["mean_seconds"]
-        for stage_name in stage_names
-    )
-
-    mean_closure_error_s = (
-        summary["mean_seconds"]
-        - stage_mean_sum
-    )
-
-    if abs(mean_closure_error_s) > 1e-6:
-        raise RuntimeError(
-            f"Mean stage closure error is too large: "
-            f"{mean_closure_error_s:.9f}s"
-        )
-
-    summary["stage_mean_sum_seconds"] = stage_mean_sum
-    summary["mean_closure_error_seconds"] = mean_closure_error_s
+    summary = summarize_measurements(per_image)
 
     record = {
         "purpose": "multi-image baseline; warm-up excluded from measured statistics",
