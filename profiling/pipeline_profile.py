@@ -112,6 +112,29 @@ def main():
         elif device == "mps":
             torch.mps.synchronize()
 
+    class ModuleTimer:
+        def __init__(self):
+            self.reset()
+
+        def reset(self):
+            self.started_at = None
+            self.elapsed_seconds = 0.0
+            self.call_count = 0
+
+        def before_forward(self, module, args):
+            synchronize()
+            self.started_at = time.perf_counter()
+
+        def after_forward(self, module, args, output):
+            synchronize()
+
+            if self.started_at is None:
+                raise RuntimeError("ModuleTimer ended without starting")
+
+            self.elapsed_seconds += time.perf_counter() - self.started_at
+            self.call_count += 1
+            self.started_at = None
+
     print(f"Loading {args.model_id} on {device} ({dtype}). First use downloads weights.", flush=True)
     start = time.perf_counter()
     processor = AutoProcessor.from_pretrained(args.model_id, local_files_only=args.local_files_only)
@@ -130,6 +153,47 @@ def main():
         print("Moving model from CPU to MPS; this can use substantial unified memory.", flush=True)
         model = model.to(device)
     model.eval()
+
+
+    if args.model_id != DEFAULT_MODEL_ID:
+        parser.error(
+            "Pipeline stage profiling currently supports only "
+            "Qwen/Qwen3-VL-2B-Instruct"
+        )
+
+    visual_timer = ModuleTimer()
+
+    visual_pre_hook = model.model.visual.register_forward_pre_hook(
+        visual_timer.before_forward
+    )
+
+    visual_post_hook = model.model.visual.register_forward_hook(
+        visual_timer.after_forward
+    )
+
+
+    merger_timer = ModuleTimer()
+
+    merger_modules = [
+        model.model.visual.merger,
+        *model.model.visual.deepstack_merger_list,
+    ]
+
+    merger_hook_handles = []
+
+    for merger_module in merger_modules:
+        merger_hook_handles.extend([
+            merger_module.register_forward_pre_hook(
+                merger_timer.before_forward
+            ),
+            merger_module.register_forward_hook(
+                merger_timer.after_forward
+            ),
+        ])
+
+    expected_merger_calls = len(merger_modules)
+
+
     synchronize()
     load_s = time.perf_counter() - start
     print(f"Model loaded in {load_s:.1f}s. Preparing image...", flush=True)
@@ -269,9 +333,43 @@ def main():
             synchronize()
             preprocessing_s = time.perf_counter() - preprocessing_start
 
+            visual_timer.reset()
+            merger_timer.reset()
+
             input_tokens = inputs["input_ids"].shape[-1]
             with torch.inference_mode():
                 output = model.generate(**inputs, max_new_tokens=args.max_new_tokens, do_sample=False)
+
+            visual_module_s = visual_timer.elapsed_seconds
+            visual_module_calls = visual_timer.call_count
+
+            merger_s = merger_timer.elapsed_seconds
+            merger_calls = merger_timer.call_count
+
+            if visual_module_calls != 1:
+                raise RuntimeError(
+                    f"Expected one visual forward call, got {visual_module_calls}"
+                )
+            if visual_module_s <= 0:
+                raise RuntimeError("Visual module latency must be positive")
+
+            if merger_calls != expected_merger_calls:
+                raise RuntimeError(
+                    f"Expected {expected_merger_calls} merger calls, "
+                    f"got {merger_calls}"
+                )
+
+            if merger_s <= 0:
+                raise RuntimeError("Merger latency must be positive")
+
+            if merger_s >= visual_module_s:
+                raise RuntimeError(
+                    "Merger latency must be smaller than total visual latency"
+                )
+
+            vision_encoder_s = visual_module_s - merger_s
+
+
             generated = output[0, input_tokens:]
             answer = processor.decode(generated, skip_special_tokens=True).strip()
             empty_answer_diagnostics = {}
@@ -300,6 +398,14 @@ def main():
             "answer": answer,
             "stages_seconds": {
                 "image_preprocessing": preprocessing_s,
+                "vision_encoder": vision_encoder_s,
+                "multimodal_projection_mergers": merger_s,
+            },
+            "stage_diagnostics": {
+                "visual_module_total_seconds": visual_module_s,
+                "visual_module_calls": visual_module_calls,
+                "merger_calls": merger_calls,
+                "expected_merger_calls": expected_merger_calls,
             },
             **empty_answer_diagnostics,
             "memory": memory, "memory_after": memory_after,
