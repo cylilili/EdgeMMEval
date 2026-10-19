@@ -524,6 +524,49 @@ def main():
 
             synchronize()
             elapsed_s = time.perf_counter() - total_start
+
+            token_generation_s = (
+                elapsed_s
+                - preprocessing_s
+                - first_forward_s
+            )
+
+            if token_generation_s <= 0:
+                raise RuntimeError(
+                    "Token generation latency must be positive"
+                )
+
+            decode_model_forwards_s = sum(
+                model_forward_durations[1:]
+            )
+
+            generation_overhead_s = (
+                token_generation_s
+                - decode_model_forwards_s
+            )
+
+            if generation_overhead_s < -1e-6:
+                raise RuntimeError(
+                    "Generation overhead cannot be negative"
+                )
+
+            stage_sum_s = (
+                preprocessing_s
+                + vision_encoder_s
+                + multimodal_projection_s
+                + llm_prefill_s
+                + token_generation_s
+            )
+
+            closure_error_s = elapsed_s - stage_sum_s
+
+            if abs(closure_error_s) > 1e-6:
+                raise RuntimeError(
+                    f"Stage latency closure error is too large: "
+                    f"{closure_error_s:.9f}s"
+                )
+
+
         finally:
             memory = stop_memory_tracking(memory_tracker)
         memory_after = {
@@ -543,6 +586,7 @@ def main():
                 "vision_encoder": vision_encoder_s,
                 "multimodal_projection": multimodal_projection_s,
                 "llm_prefill": llm_prefill_s,
+                "token_generation": token_generation_s,
             },
             "stage_diagnostics": {
                 "visual_module_total_seconds": visual_module_s,
@@ -560,6 +604,11 @@ def main():
                 "first_lm_head_seconds": first_lm_head_s,
                 "merger_seconds": merger_s,
                 "embedding_preparation_seconds": embedding_preparation_s,
+                "token_generation_model_forwards_seconds": decode_model_forwards_s,
+                "generation_overhead_seconds": generation_overhead_s,
+                "stage_sum_seconds": stage_sum_s,
+                "closure_error_seconds": closure_error_s,
+
             },
             **empty_answer_diagnostics,
             "memory": memory, "memory_after": memory_after,
